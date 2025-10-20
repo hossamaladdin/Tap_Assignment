@@ -1,23 +1,16 @@
 # AWS RDS SQL Server Infrastructure
 
-Terraform Infrastructure as Code project for provisioning high-availability RDS SQL Server on AWS.
+This project provides Terraform configurations for deploying an AWS RDS SQL Server infrastructure across different environments (dev, staging, and prod).
 
 ## Overview
 
-This project deploys:
-- Multi-AZ RDS SQL Server for high availability
-- VPC with private subnets across multiple availability zones
-- Secure credential management using AWS Secrets Manager
-- CloudWatch monitoring and Performance Insights
-- IAM roles with least privilege
-- Environment configurations (dev, staging, prod)
-
-## Components
-
-- **VPC Module**: Network with private subnets across multiple AZs
-- **RDS Module**: Multi-AZ SQL Server with parameter/option groups
-- **Secrets Module**: Database credential management
-- **IAM Module**: Monitoring and access roles
+This infrastructure deploys:
+- RDS SQL Server with environment-specific configurations
+- VPC with public and private subnets across multiple availability zones
+- NAT Gateways for private subnet connectivity
+- Security groups and IAM roles
+- Secrets management for database credentials
+- CloudWatch logging and monitoring
 
 ## Prerequisites
 
@@ -25,132 +18,112 @@ This project deploys:
 - AWS CLI >= 2.0
 - AWS Account with appropriate permissions
 
-### AWS Permissions Required
-- VPC and networking resources
-- RDS instance management
-- Secrets Manager
-- IAM roles and policies
-- CloudWatch
-- EC2 (if using bastion host)
-
-## Quick Start
-
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/hossamaladdin/Tap_Assignment.git
-   cd Tap_Assignment
-   ```
-
-2. **Initialize Terraform**
-   ```bash
-   terraform init
-   ```
-
-3. **Deploy Infrastructure**
-   ```bash
-   # For development environment
-   terraform apply -var-file=environments/dev.tfvars
-
-   # For staging environment
-   terraform apply -var-file=environments/staging.tfvars
-
-   # For production environment
-   terraform apply -var-file=environments/prod.tfvars
-   ```
-
-4. **Get Outputs**
-   ```bash
-   terraform output
-   ```
-
 ## Project Structure
 
 ```
 ├── main.tf                 # Main configuration
 ├── variables.tf            # Input variables
-├── outputs.tf              # Output values
-├── versions.tf             # Provider versions
-├── providers.tf            # Provider configuration
-├── environments/           # Environment configs
-│   ├── dev.tfvars
-│   ├── staging.tfvars
-│   └── prod.tfvars
-├── modules/                # Terraform modules
-│   ├── vpc/               # Network infrastructure
-│   ├── rds/               # Database infrastructure
-│   ├── secrets/           # Credential management
-│   └── iam/               # Access management
-└── scripts/               # Helper scripts
-    ├── connect_to_rds.sh  # Database connection
-    ├── setup.sh           # Project setup
-    └── update_secret.sh   # Secret management
+├── outputs.tf             # Output definitions
+├── versions.tf            # Provider versions
+├── providers.tf           # Provider configuration
+├── modules/              # Terraform modules
+│   ├── vpc/             # Network infrastructure
+│   ├── rds/             # Database infrastructure
+│   ├── secrets/         # Credential management
+│   └── iam/             # Access management
+└── terraform.tfvars.example  # Example variables file
 ```
 
-## Configuration
+## Environment Configurations
 
-### Environment Files
-Each environment file contains configuration for instance sizing, storage, backups, and security settings.
+Three environments are supported with different configurations:
 
-### Key Variables
-- `environment`: Environment name (dev/staging/prod)
-- `rds_instance_class`: RDS instance size
-- `rds_allocated_storage`: Initial storage in GB
-- `rds_backup_retention_period`: Backup retention days
-- `allowed_cidr_blocks`: IP ranges for database access
+### Development (dev)
+- Instance Class: db.t3.large
+- Storage: 100GB initial, max 200GB
+- Multi-AZ: Disabled
+- Backup Retention: 3 days
+- Storage Type: gp3
 
-## Connecting to RDS
+### Staging
+- Instance Class: db.m5.xlarge
+- Storage: 200GB initial, max 500GB
+- Multi-AZ: Enabled
+- Backup Retention: 7 days
+- Storage Type: gp3
 
-Use the connection script:
-```bash
-./scripts/connect_to_rds.sh <rds-endpoint>
-```
+### Production (prod)
+- Instance Class: db.m5.2xlarge
+- Storage: 500GB initial, max 1000GB
+- Multi-AZ: Enabled
+- Backup Retention: 14 days
+- Storage Type: io1
+- Enhanced security settings
 
-Or connect manually:
-- **Server**: RDS endpoint (from terraform output)
-- **Authentication**: SQL Server Authentication
-- **Username**: sqladmin
-- **Password**: Retrieved from AWS Secrets Manager
+## Deployment Instructions
 
-## Security
+1. **Initialize Terraform**
+   ```bash
+   terraform init
+   ```
 
-- Database runs in private subnets
+2. **Plan Deployment** (choose environment)
+   ```bash
+   # Development
+   terraform plan -var="environment=dev"
+
+   # Staging
+   terraform plan -var="environment=staging"
+
+   # Production
+   terraform plan -var="environment=prod"
+   ```
+
+3. **Apply Configuration**
+   ```bash
+   # Development
+   terraform apply -var="environment=dev"
+
+   # Staging
+   terraform apply -var="environment=staging"
+
+   # Production
+   terraform apply -var="environment=prod"
+   ```
+
+4. **View Outputs**
+   ```bash
+   terraform output
+   ```
+
+## Outputs
+
+- `rds_endpoint`: Database connection endpoint
+- `rds_port`: Database port (1433)
+- `db_secret_name`: Name of the secret in AWS Secrets Manager
+- `db_secret_arn`: ARN of the secret in AWS Secrets Manager
+- `vpc_id`: ID of the created VPC
+- `private_subnet_ids`: List of private subnet IDs
+- `public_subnet_ids`: List of public subnet IDs
+- `rds_security_group_id`: ID of the RDS security group
+
+## Security Features
+
+- RDS instance deployed in private subnets
 - Encryption at rest enabled
-- Credentials stored in AWS Secrets Manager
-- Security groups restrict access
-- IAM roles follow least privilege
+- Secure credential management using AWS Secrets Manager
+- Security groups with minimal required access
+- IAM roles following least privilege principle
+- CloudWatch logging enabled
 
-## Monitoring
+## Contributing
 
-- CloudWatch logs for SQL Server error and agent logs
-- Performance Insights for query-level monitoring
-- Enhanced monitoring at 60-second intervals
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## Environment Sizing
+## License
 
-- **Development**: db.t3.large, 100GB, 3-day backups
-- **Staging**: db.m5.xlarge, 200GB, 7-day backups
-- **Production**: db.m5.2xlarge, 500GB, 14-day backups
-
-## Cost Optimization
-
-### Environment-Specific Sizing
-
-| Environment | Instance Class | Storage | Multi-AZ | Estimated Monthly Cost* |
-|-------------|---------------|---------|----------|------------------------|
-| Dev | db.t3.large | 100 GB | No | ~$300-400 |
-| Staging | db.m5.xlarge | 200 GB | Yes | ~$1,200-1,500 |
-| Production | db.m5.2xlarge | 500 GB | Yes | ~$2,500-3,000 |
-
-*Estimates are approximate and vary by region
-
-### Cost-Saving Tips
-
-1. **Use Reserved Instances** for production (up to 60% savings)
-2. **Enable Storage Autoscaling** to avoid over-provisioning
-3. **Optimize Backup Retention** based on requirements
-4. **Use gp3 storage** instead of gp2 or io1 where appropriate
-5. **Disable bastion host** when not needed
-
-## Authors
-
-- **Hossam Aladdin** - *Initial work* - [hossamaladdin](https://github.com/hossamaladdin)
+This project is licensed under the MIT License.
