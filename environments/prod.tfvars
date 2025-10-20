@@ -45,9 +45,3 @@ db_name = "master"
 # Security
 allowed_cidr_blocks        = [] # Add your IP ranges here
 allowed_security_group_ids = []
-
-# Bastion Configuration
-enable_bastion                 = true # Enable bastion for production
-bastion_instance_type          = "t3.small"
-bastion_key_name               = "" # Add your SSH key name
-bastion_allowed_cidr_blocks    = [] # Add your IP ranges for SSH access

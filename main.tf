@@ -20,7 +20,7 @@ module "vpc" {
   availability_zones   = var.availability_zones
   private_subnet_cidrs = var.private_subnet_cidrs
   public_subnet_cidrs  = var.public_subnet_cidrs
-  enable_nat_gateway   = var.enable_bastion
+  enable_nat_gateway   = false
   tags                 = local.common_tags
 }
 
@@ -88,26 +88,10 @@ module "rds" {
   publicly_accessible                     = var.rds_publicly_accessible
   deletion_protection                     = var.rds_deletion_protection
   allowed_cidr_blocks                     = var.allowed_cidr_blocks
-  allowed_security_group_ids              = var.enable_bastion ? concat(var.allowed_security_group_ids, [module.bastion[0].security_group_id]) : var.allowed_security_group_ids
+  allowed_security_group_ids              = var.allowed_security_group_ids
   
   # Updates
   auto_minor_version_upgrade              = var.rds_auto_minor_version_upgrade
   
   tags = local.common_tags
-}
-
-# Bastion Host Module (Optional)
-module "bastion" {
-  count  = var.enable_bastion ? 1 : 0
-  source = "./modules/bastion"
-
-  name_prefix              = local.name_prefix
-  vpc_id                   = module.vpc.vpc_id
-  subnet_id                = module.vpc.public_subnet_ids[0]
-  instance_type            = var.bastion_instance_type
-  key_name                 = var.bastion_key_name
-  allowed_cidr_blocks      = var.bastion_allowed_cidr_blocks
-  rds_security_group_id    = module.rds.security_group_id
-  secret_arn               = module.secrets.secret_arn
-  tags                     = local.common_tags
 }

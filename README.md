@@ -1,230 +1,290 @@
-# AWS RDS SQL Server High-Availability Infrastructure
+# AWS RDS SQL Server Infrastructure# AWS RDS SQL Server Infrastructure
 
-[![Terraform](https://img.shields.io/badge/Terraform-v1.0+-623CE4?logo=terraform)](https://www.terraform.io/)
-[![AWS](https://img.shields.io/badge/AWS-RDS-FF9900?logo=amazon-aws)](https://aws.amazon.com/rds/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A production-ready Terraform Infrastructure as Code (IaC) project for provisioning a high-availability RDS SQL Server cluster on AWS with comprehensive security, monitoring, and best practices.
 
-## 📋 Table of Contents
+Terraform project for provisioning high-availability RDS SQL Server on AWS.Terraform Infrastructure as Code project for provisioning a high-availability RDS SQL Server on AWS.
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Connecting to RDS](#connecting-to-rds)
-- [Monitoring](#monitoring)
-- [Security](#security)
-- [Cost Optimization](#cost-optimization)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
 
-## 🎯 Overview
 
-This project provides a complete Infrastructure as Code solution for deploying a highly available RDS SQL Server instance on AWS. It includes:
+## Overview## Overview
 
-- **Multi-AZ RDS SQL Server** for high availability
-- **VPC with public and private subnets** across multiple availability zones
-- **Secure credential management** using AWS Secrets Manager
-- **Enhanced monitoring** with CloudWatch and Performance Insights
-- **Optional bastion host** for secure database access
-- **IAM roles and policies** following the principle of least privilege
-- **Environment-specific configurations** (dev, staging, prod)
 
-## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                          AWS Cloud                               │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    VPC (10.0.0.0/16)                      │  │
-│  │                                                            │  │
-│  │  ┌──────────────────┐        ┌──────────────────┐        │  │
-│  │  │  Public Subnet   │        │  Public Subnet   │        │  │
-│  │  │   (AZ-1a)        │        │   (AZ-1b)        │        │  │
-│  │  │                  │        │                  │        │  │
-│  │  │  ┌────────────┐  │        │  ┌────────────┐  │        │  │
-│  │  │  │  Bastion   │  │        │  │ NAT Gateway│  │        │  │
-│  │  │  │   Host     │  │        │  └────────────┘  │        │  │
-│  │  │  └────────────┘  │        │                  │        │  │
-│  │  └──────────────────┘        └──────────────────┘        │  │
-│  │           │                           │                   │  │
-│  │           │                           │                   │  │
-│  │  ┌────────▼───────────┐      ┌───────▼──────────┐        │  │
-│  │  │  Private Subnet    │      │  Private Subnet  │        │  │
-│  │  │   (AZ-1a)          │      │   (AZ-1b)        │        │  │
-│  │  │                    │      │                  │        │  │
-│  │  │  ┌──────────────┐  │      │  ┌──────────────┐│        │  │
-│  │  │  │ RDS Primary  │◄─┼──────┼─►│ RDS Standby  ││        │  │
-│  │  │  │ SQL Server   │  │      │  │ SQL Server   ││        │  │
-│  │  │  └──────────────┘  │      │  └──────────────┘│        │  │
-│  │  └────────────────────┘      └──────────────────┘        │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  ┌────────────────────┐    ┌──────────────────┐                │
-│  │  Secrets Manager   │    │   CloudWatch     │                │
-│  │  (DB Credentials)  │    │   (Monitoring)   │                │
-│  └────────────────────┘    └──────────────────┘                │
-└─────────────────────────────────────────────────────────────────┘
-```
+This project deploys:This project deploys:
 
-### Key Components
+- Multi-AZ RDS SQL Server for high availability
 
-1. **VPC Module**: Creates isolated network with public/private subnets across multiple AZs
-2. **RDS Module**: Provisions Multi-AZ SQL Server instance with parameter/option groups
-3. **Secrets Manager Module**: Securely stores and manages database credentials
-4. **IAM Module**: Creates roles and policies for RDS monitoring and Secrets Manager access
-5. **Bastion Module**: Optional EC2 instance for secure database access
+- VPC with private subnets across multiple availability zones- **Multi-AZ RDS SQL Server** for high availability
 
-## ✨ Features
+- Secure credential management using AWS Secrets Manager- **VPC with private subnets** across multiple availability zones
 
-### High Availability
-- ✅ Multi-AZ deployment for automatic failover
-- ✅ Automated backups with configurable retention
-- ✅ Maintenance window management
+- CloudWatch monitoring and Performance Insights- **Secure credential management** using AWS Secrets Manager
 
-### Security
-- ✅ Encrypted storage at rest
-- ✅ Secure credential management with Secrets Manager
-- ✅ Network isolation with VPC and security groups
-- ✅ IAM roles with least privilege principle
-- ✅ VPC Flow Logs for network monitoring
+- IAM roles with least privilege- **CloudWatch monitoring** and Performance Insights
 
-### Monitoring
-- ✅ CloudWatch alarms for CPU, memory, storage, and connections
-- ✅ Performance Insights enabled
-- ✅ Enhanced monitoring (60-second intervals)
-- ✅ CloudWatch Logs integration (error and agent logs)
+- Environment configurations (dev, staging, prod)- **IAM roles and policies** with least privilege
 
-### Scalability
-- ✅ Storage autoscaling
-- ✅ Easy instance class modifications
-- ✅ Read replica support (can be added)
+- **Environment configurations** (dev, staging, prod)
 
-### Cost Optimization
-- ✅ Environment-specific configurations
-- ✅ gp3 storage for better price/performance
-- ✅ Configurable backup retention
-- ✅ Optional bastion host
+## Components
 
-## 📋 Prerequisites
+## Components
 
-### Required Tools
-- [Terraform](https://www.terraform.io/downloads.html) >= 1.0
+- **VPC Module**: Network with private subnets across multiple AZs
+
+- **RDS Module**: Multi-AZ SQL Server with parameter/option groups- **VPC Module**: Network with private subnets across multiple AZs
+
+- **Secrets Module**: Database credential management  - **RDS Module**: Multi-AZ SQL Server with parameter/option groups
+
+- **IAM Module**: Monitoring and access roles- **Secrets Module**: Database credential management
+
+- **IAM Module**: Monitoring and access roles
+
+## Prerequisites
+
+## Features
+
+- Terraform >= 1.0
+
+- AWS CLI >= 2.0- Multi-AZ deployment for high availability
+
+- AWS Account with appropriate permissions- Encrypted storage and secure credentials
+
+- CloudWatch monitoring and Performance Insights
+
+## Quick Start- Environment-specific configurations (dev/staging/prod)
+
+- Storage autoscaling
+
+1. **Clone Repository**
+
+   ```bash## 📋 Prerequisites
+
+   git clone https://github.com/hossamaladdin/Tap_Assignment.git
+
+   cd Tap_Assignment### Required Tools
+
+   ```- [Terraform](https://www.terraform.io/downloads.html) >= 1.0
+
 - [AWS CLI](https://aws.amazon.com/cli/) >= 2.0
-- AWS Account with appropriate permissions
 
-### AWS Permissions Required
-- VPC and networking resources
+2. **Initialize Terraform**- AWS Account with appropriate permissions
+
+   ```bash
+
+   terraform init### AWS Permissions Required
+
+   ```- VPC and networking resources
+
 - RDS instance management
-- Secrets Manager
-- IAM roles and policies
-- CloudWatch
-- EC2 (if using bastion host)
 
-### AWS CLI Configuration
-```bash
-aws configure
-# Enter your AWS Access Key ID
-# Enter your AWS Secret Access Key
-# Default region name: us-east-1
+3. **Deploy Infrastructure**- Secrets Manager
+
+   ```bash- IAM roles and policies
+
+   # For development environment- CloudWatch
+
+   terraform apply -var-file=environments/dev.tfvars- EC2 (if using bastion host)
+
+   
+
+   # For staging environment  ### AWS CLI Configuration
+
+   terraform apply -var-file=environments/staging.tfvars```bash
+
+   aws configure
+
+   # For production environment# Enter your AWS Access Key ID
+
+   terraform apply -var-file=environments/prod.tfvars# Enter your AWS Secret Access Key
+
+   ```# Default region name: us-east-1
+
 # Default output format: json
-```
 
-## 🚀 Quick Start
+4. **Get Outputs**```
+
+   ```bash
+
+   terraform output## 🚀 Quick Start
+
+   ```
 
 ### 1. Clone the Repository
-```bash
+
+## Project Structure```bash
+
 git clone https://github.com/hossamaladdin/Tap_Assignment.git
-cd Tap_Assignment
-```
 
-### 2. Initialize Terraform
-```bash
-terraform init
-```
+```cd Tap_Assignment
 
-### 3. Review and Customize Configuration
-Edit the environment-specific configuration file:
-```bash
-# For development environment
-cp environments/dev.tfvars terraform.tfvars
-vim terraform.tfvars
-```
+├── main.tf                 # Main configuration```
 
-**Important**: Update these values in `terraform.tfvars`:
-- `aws_region`: Your preferred AWS region
-- `allowed_cidr_blocks`: Your IP ranges for database access
-- `bastion_key_name`: Your SSH key name (if using bastion)
+├── variables.tf            # Input variables
+
+├── outputs.tf              # Output values### 2. Initialize Terraform
+
+├── versions.tf             # Provider versions```bash
+
+├── providers.tf            # Provider configurationterraform init
+
+├── environments/           # Environment configs```
+
+│   ├── dev.tfvars
+
+│   ├── staging.tfvars### 3. Review and Customize Configuration
+
+│   └── prod.tfvarsEdit the environment-specific configuration file:
+
+├── modules/                # Terraform modules```bash
+
+│   ├── vpc/               # Network infrastructure# For development environment
+
+│   ├── rds/               # Database infrastructurecp environments/dev.tfvars terraform.tfvars
+
+│   ├── secrets/           # Credential managementvim terraform.tfvars
+
+│   └── iam/               # Access management```
+
+└── scripts/               # Helper scripts
+
+    ├── connect_to_rds.sh  # Database connection**Important**: Update these values in `terraform.tfvars`:
+
+    ├── setup.sh           # Project setup- `aws_region`: Your preferred AWS region
+
+    └── update_secret.sh   # Secret management- `allowed_cidr_blocks`: Your IP ranges for database access
+
+```- `bastion_key_name`: Your SSH key name (if using bastion)
+
 - `bastion_allowed_cidr_blocks`: Your IP ranges for SSH access
 
+## Configuration
+
 ### 4. Plan the Deployment
-```bash
+
+### Environment Files```bash
+
 terraform plan -var-file=environments/dev.tfvars
-```
 
-### 5. Deploy the Infrastructure
+Each environment file (`environments/*.tfvars`) contains configuration for:```
+
+- Instance sizing
+
+- Storage allocation### 5. Deploy the Infrastructure
+
+- Backup retention```bash
+
+- Network settingsterraform apply -var-file=environments/dev.tfvars
+
+- Security configurations```
+
+
+
+### Key Variables### 6. Retrieve Outputs
+
 ```bash
-terraform apply -var-file=environments/dev.tfvars
+
+- `environment`: Environment name (dev/staging/prod)terraform output
+
+- `rds_instance_class`: RDS instance size```
+
+- `rds_allocated_storage`: Initial storage in GB
+
+- `rds_backup_retention_period`: Backup retention days## 📁 Project Structure
+
+- `allowed_cidr_blocks`: IP ranges for database access
+
 ```
 
-### 6. Retrieve Outputs
-```bash
-terraform output
-```
+## Connecting to RDS.
 
-## 📁 Project Structure
-
-```
-.
 ├── README.md                      # This file
-├── versions.tf                    # Terraform and provider versions
-├── providers.tf                   # AWS provider configuration
-├── variables.tf                   # Root module variables
-├── main.tf                        # Main resource definitions
+
+Use the included connection script:├── versions.tf                    # Terraform and provider versions
+
+```bash├── providers.tf                   # AWS provider configuration
+
+./scripts/connect_to_rds.sh <rds-endpoint>├── variables.tf                   # Root module variables
+
+```├── main.tf                        # Main resource definitions
+
 ├── outputs.tf                     # Output values
-├── environments/                  # Environment-specific configurations
-│   ├── dev.tfvars                # Development environment
-│   ├── staging.tfvars            # Staging environment
-│   └── prod.tfvars               # Production environment
-├── modules/                       # Reusable Terraform modules
+
+Or manually with SQL Server tools:├── environments/                  # Environment-specific configurations
+
+- **Server**: RDS endpoint (from terraform output)│   ├── dev.tfvars                # Development environment
+
+- **Authentication**: SQL Server Authentication│   ├── staging.tfvars            # Staging environment
+
+- **Username**: sqladmin (or configured username)│   └── prod.tfvars               # Production environment
+
+- **Password**: Retrieved from AWS Secrets Manager├── modules/                       # Reusable Terraform modules
+
 │   ├── vpc/                      # VPC and networking
-│   │   ├── main.tf
+
+## Outputs│   │   ├── main.tf
+
 │   │   ├── variables.tf
-│   │   └── outputs.tf
-│   ├── rds/                      # RDS SQL Server
-│   │   ├── main.tf
-│   │   ├── variables.tf
-│   │   └── outputs.tf
+
+The deployment provides:│   │   └── outputs.tf
+
+- `rds_endpoint`: Database connection endpoint│   ├── rds/                      # RDS SQL Server
+
+- `rds_master_username`: Master username│   │   ├── main.tf
+
+- `db_secret_arn`: Secrets Manager ARN for credentials│   │   ├── variables.tf
+
+- `rds_instance_id`: RDS instance identifier│   │   └── outputs.tf
+
 │   ├── secrets/                  # Secrets Manager
-│   │   ├── main.tf
+
+## Monitoring│   │   ├── main.tf
+
 │   │   ├── variables.tf
-│   │   └── outputs.tf
-│   ├── iam/                      # IAM roles and policies
-│   │   ├── main.tf
+
+- CloudWatch logs are enabled for SQL Server error and agent logs│   │   └── outputs.tf
+
+- Performance Insights provides query-level monitoring│   ├── iam/                      # IAM roles and policies
+
+- Enhanced monitoring available at 60-second intervals│   │   ├── main.tf
+
 │   │   ├── variables.tf
-│   │   └── outputs.tf
+
+## Security│   │   └── outputs.tf
+
 │   └── bastion/                  # Bastion host (optional)
-│       ├── main.tf
-│       ├── variables.tf
-│       └── outputs.tf
-├── scripts/                       # Helper scripts
-│   ├── connect_to_rds.sh         # Database connection script
+
+- Database runs in private subnets│       ├── main.tf
+
+- Encryption at rest enabled│       ├── variables.tf
+
+- Credentials stored in AWS Secrets Manager│       └── outputs.tf
+
+- Security groups restrict access├── scripts/                       # Helper scripts
+
+- IAM roles follow least privilege│   ├── connect_to_rds.sh         # Database connection script
+
 │   └── update_secret.sh          # Update Secrets Manager
-└── docs/                          # Additional documentation
+
+## Cost Optimization└── docs/                          # Additional documentation
+
     ├── ARCHITECTURE.md
-    ├── SECURITY.md
-    └── OPERATIONS.md
-```
+
+Environment-specific sizing:    ├── SECURITY.md
+
+- **Development**: db.t3.large, 100GB, 3-day backups    └── OPERATIONS.md
+
+- **Staging**: db.m5.xlarge, 200GB, 7-day backups  ```
+
+- **Production**: db.m5.2xlarge, 500GB, 14-day backups
 
 ## ⚙️ Configuration
 
+## License
+
 ### Environment Variables
 
+This project is licensed under the MIT License.
 The project supports three environments: **dev**, **staging**, and **prod**. Each environment has its own configuration file in the `environments/` directory.
 
 #### Key Configuration Options
@@ -524,10 +584,6 @@ Contributions are welcome! Please:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 👥 Authors
 
 - **Hossam Aladdin** - *Initial work* - [hossamaladdin](https://github.com/hossamaladdin)
@@ -537,9 +593,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - AWS Documentation Team
 - Terraform Community
 - HashiCorp
-
----
-
-**Note**: This is a demonstration project for the Tap Database Consultant Assignment. Always review and test thoroughly before using in production environments.
-
-For questions or support, please open an issue on GitHub.

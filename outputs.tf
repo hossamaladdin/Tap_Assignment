@@ -63,17 +63,6 @@ output "rds_security_group_id" {
   value       = module.rds.security_group_id
 }
 
-# Bastion Outputs
-output "bastion_public_ip" {
-  description = "Public IP of the bastion host"
-  value       = var.enable_bastion ? module.bastion[0].bastion_public_ip : null
-}
-
-output "bastion_instance_id" {
-  description = "Instance ID of the bastion host"
-  value       = var.enable_bastion ? module.bastion[0].bastion_instance_id : null
-}
-
 # Connection Information
 output "connection_info" {
   description = "Connection information for the RDS instance"
