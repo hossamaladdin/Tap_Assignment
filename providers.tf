@@ -6,8 +6,6 @@ provider "aws" {
       Environment = var.environment
       Project     = var.project_name
       ManagedBy   = "Terraform"
-      Owner       = var.owner
-      CostCenter  = var.cost_center
     }
   }
 }

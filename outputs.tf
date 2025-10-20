@@ -35,16 +35,7 @@ output "rds_port" {
   value       = module.rds.db_instance_port
 }
 
-output "rds_master_username" {
-  description = "Master username for RDS"
-  value       = var.db_master_username
-  sensitive   = true
-}
-
-output "rds_database_name" {
-  description = "Name of the initial database"
-  value       = var.db_name
-}
+# Removed sensitive outputs as they are included in secrets
 
 # Secrets Manager Outputs
 output "db_secret_arn" {
@@ -69,12 +60,10 @@ output "connection_info" {
   value = {
     endpoint        = module.rds.db_instance_endpoint
     port            = module.rds.db_instance_port
-    username        = var.db_master_username
-    database        = var.db_name
     secret_arn      = module.secrets.secret_arn
     security_group  = module.rds.security_group_id
   }
-  sensitive = false
+  sensitive = true
 }
 
 # CloudWatch Log Groups

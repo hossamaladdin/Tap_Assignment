@@ -2,39 +2,67 @@
 locals {
   name_prefix = "${var.project_name}-${var.environment}"
   
+  # Automatically determine environment-specific settings
+  env_configs = {
+    dev = {
+      instance_class        = "db.t3.large"
+      multi_az             = false
+      backup_retention     = 3
+      deletion_protection  = false
+      allocated_storage    = 100
+      max_allocated_storage = 200
+      auto_minor_version_upgrade = true
+      storage_type         = "gp3"
+    }
+    staging = {
+      instance_class        = "db.m5.xlarge"
+      multi_az             = true
+      backup_retention     = 7
+      deletion_protection  = true
+      allocated_storage    = 200
+      max_allocated_storage = 500
+      auto_minor_version_upgrade = false
+      storage_type         = "gp3"
+    }
+    prod = {
+      instance_class        = "db.m5.2xlarge"
+      multi_az             = true
+      backup_retention     = 14
+      deletion_protection  = true
+      allocated_storage    = 500
+      max_allocated_storage = 1000
+      auto_minor_version_upgrade = false
+      storage_type         = "io1"
+    }
+  }
+
+  # Get environment-specific config with dev as fallback
+  env_config = lookup(local.env_configs, var.environment, local.env_configs.dev)
+  
   common_tags = {
     Environment = var.environment
     Project     = var.project_name
     ManagedBy   = "Terraform"
-    Owner       = var.owner
-    CostCenter  = var.cost_center
   }
 }
 
-# VPC Module
+# VPC Module - Creates the networking infrastructure
 module "vpc" {
   source = "./modules/vpc"
 
-  name_prefix          = local.name_prefix
-  vpc_cidr             = var.vpc_cidr
-  availability_zones   = var.availability_zones
-  private_subnet_cidrs = var.private_subnet_cidrs
-  public_subnet_cidrs  = var.public_subnet_cidrs
-  enable_nat_gateway   = false
-  tags                 = local.common_tags
+  name_prefix = local.name_prefix
+  tags        = local.common_tags
 }
 
-# Secrets Manager Module
+# Secrets Manager Module - Handles database credentials
 module "secrets" {
   source = "./modules/secrets"
 
-  name_prefix        = local.name_prefix
-  db_master_username = var.db_master_username
-  db_master_password = var.db_master_password
-  tags               = local.common_tags
+  name_prefix = local.name_prefix
+  tags        = local.common_tags
 }
 
-# IAM Module
+# IAM Module - Creates necessary IAM roles
 module "iam" {
   source = "./modules/iam"
 
@@ -42,56 +70,26 @@ module "iam" {
   tags        = local.common_tags
 }
 
-# RDS Module
+# RDS Module - Creates the SQL Server instance
 module "rds" {
   source = "./modules/rds"
+  depends_on = [module.vpc, module.secrets, module.iam]
 
-  name_prefix                             = local.name_prefix
-  vpc_id                                  = module.vpc.vpc_id
-  subnet_ids                              = module.vpc.private_subnet_ids
+  name_prefix          = local.name_prefix
+  vpc_id              = module.vpc.vpc_id
+  subnet_ids          = module.vpc.private_subnet_ids
+  master_password     = module.secrets.db_password
+  monitoring_role_arn = module.iam.rds_monitoring_role_arn
   
-  # Instance Configuration
-  instance_class                          = var.rds_instance_class
-  engine_version                          = var.rds_engine_version
-  allocated_storage                       = var.rds_allocated_storage
-  max_allocated_storage                   = var.rds_max_allocated_storage
-  storage_type                            = var.rds_storage_type
-  iops                                    = var.rds_iops
-  storage_throughput                      = var.rds_storage_throughput
-  
-  # Database Configuration
-  db_name                                 = var.db_name
-  master_username                         = var.db_master_username
-  master_password                         = module.secrets.db_password
-  license_model                           = var.rds_license_model
-  timezone                                = var.rds_timezone
-  character_set_name                      = var.rds_character_set_name
-  
-  # High Availability
-  multi_az                                = var.rds_multi_az
-  
-  # Backup Configuration
-  backup_retention_period                 = var.rds_backup_retention_period
-  backup_window                           = var.rds_backup_window
-  maintenance_window                      = var.rds_maintenance_window
-  skip_final_snapshot                     = var.rds_skip_final_snapshot
-  copy_tags_to_snapshot                   = var.rds_copy_tags_to_snapshot
-  
-  # Monitoring
-  enabled_cloudwatch_logs_exports         = var.rds_enabled_cloudwatch_logs_exports
-  performance_insights_enabled            = var.rds_performance_insights_enabled
-  performance_insights_retention_period   = var.rds_performance_insights_retention_period
-  monitoring_interval                     = var.rds_monitoring_interval
-  monitoring_role_arn                     = module.iam.rds_monitoring_role_arn
-  
-  # Security
-  publicly_accessible                     = var.rds_publicly_accessible
-  deletion_protection                     = var.rds_deletion_protection
-  allowed_cidr_blocks                     = var.allowed_cidr_blocks
-  allowed_security_group_ids              = var.allowed_security_group_ids
-  
-  # Updates
-  auto_minor_version_upgrade              = var.rds_auto_minor_version_upgrade
+  # Use environment-specific configurations
+  instance_class           = local.env_config.instance_class
+  multi_az                = local.env_config.multi_az
+  backup_retention_period = local.env_config.backup_retention
+  deletion_protection     = local.env_config.deletion_protection
+  allocated_storage       = local.env_config.allocated_storage
+  max_allocated_storage   = local.env_config.max_allocated_storage
+  storage_type           = local.env_config.storage_type
+  auto_minor_version_upgrade = local.env_config.auto_minor_version_upgrade
   
   tags = local.common_tags
 }

@@ -1,11 +1,13 @@
 variable "name_prefix" {
   description = "Prefix for resource names"
   type        = string
+  default     = "tap-sqlserver"
 }
 
 variable "db_master_username" {
   description = "Master username for the database"
   type        = string
+  default     = "sqladmin"
   sensitive   = true
 }
 
