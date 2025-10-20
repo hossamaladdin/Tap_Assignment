@@ -229,28 +229,3 @@ variable "allowed_security_group_ids" {
   type        = list(string)
   default     = []
 }
-
-# Bastion Host Configuration
-variable "enable_bastion" {
-  description = "Enable bastion host for database access"
-  type        = bool
-  default     = false
-}
-
-variable "bastion_instance_type" {
-  description = "EC2 instance type for bastion host"
-  type        = string
-  default     = "t3.micro"
-}
-
-variable "bastion_key_name" {
-  description = "SSH key pair name for bastion host"
-  type        = string
-  default     = ""
-}
-
-variable "bastion_allowed_cidr_blocks" {
-  description = "CIDR blocks allowed to SSH to bastion"
-  type        = list(string)
-  default     = []
-}
