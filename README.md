@@ -1,4 +1,4 @@
-# AWS RDS SQL Server Infrastructure# AWS RDS SQL Server Infrastructure# AWS RDS SQL Server Infrastructure
+# AWS RDS SQL Server Infrastructure
 
 
 
