@@ -1,138 +1,272 @@
-# AWS RDS SQL Server Infrastructure# AWS RDS SQL Server Infrastructure
+# AWS RDS SQL Server Infrastructure# AWS RDS SQL Server Infrastructure# AWS RDS SQL Server Infrastructure
 
 
 
-Terraform project for provisioning high-availability RDS SQL Server on AWS.Terraform Infrastructure as Code project for provisioning a high-availability RDS SQL Server on AWS.
+Terraform Infrastructure as Code project for provisioning high-availability RDS SQL Server on AWS.
 
 
 
-## Overview## Overview
+## OverviewTerraform project for provisioning high-availability RDS SQL Server on AWS.Terraform Infrastructure as Code project for provisioning a high-availability RDS SQL Server on AWS.
 
 
 
-This project deploys:This project deploys:
+This project deploys:
 
 - Multi-AZ RDS SQL Server for high availability
 
-- VPC with private subnets across multiple availability zones- **Multi-AZ RDS SQL Server** for high availability
+- VPC with private subnets across multiple availability zones## Overview## Overview
 
-- Secure credential management using AWS Secrets Manager- **VPC with private subnets** across multiple availability zones
-
-- CloudWatch monitoring and Performance Insights- **Secure credential management** using AWS Secrets Manager
-
-- IAM roles with least privilege- **CloudWatch monitoring** and Performance Insights
-
-- Environment configurations (dev, staging, prod)- **IAM roles and policies** with least privilege
-
-- **Environment configurations** (dev, staging, prod)
-
-## Components
-
-## Components
-
-- **VPC Module**: Network with private subnets across multiple AZs
-
-- **RDS Module**: Multi-AZ SQL Server with parameter/option groups- **VPC Module**: Network with private subnets across multiple AZs
-
-- **Secrets Module**: Database credential management  - **RDS Module**: Multi-AZ SQL Server with parameter/option groups
-
-- **IAM Module**: Monitoring and access roles- **Secrets Module**: Database credential management
-
-- **IAM Module**: Monitoring and access roles
-
-## Prerequisites
-
-## Features
-
-- Terraform >= 1.0
-
-- AWS CLI >= 2.0- Multi-AZ deployment for high availability
-
-- AWS Account with appropriate permissions- Encrypted storage and secure credentials
+- Secure credential management using AWS Secrets Manager
 
 - CloudWatch monitoring and Performance Insights
 
-## Quick Start- Environment-specific configurations (dev/staging/prod)
+- IAM roles with least privilege
 
-- Storage autoscaling
+- Environment configurations (dev, staging, prod)This project deploys:This project deploys:
+
+
+
+## Components- Multi-AZ RDS SQL Server for high availability
+
+
+
+- **VPC Module**: Network with private subnets across multiple AZs- VPC with private subnets across multiple availability zones- **Multi-AZ RDS SQL Server** for high availability
+
+- **RDS Module**: Multi-AZ SQL Server with parameter/option groups
+
+- **Secrets Module**: Database credential management- Secure credential management using AWS Secrets Manager- **VPC with private subnets** across multiple availability zones
+
+- **IAM Module**: Monitoring and access roles
+
+- CloudWatch monitoring and Performance Insights- **Secure credential management** using AWS Secrets Manager
+
+## Prerequisites
+
+- IAM roles with least privilege- **CloudWatch monitoring** and Performance Insights
+
+- Terraform >= 1.0
+
+- AWS CLI >= 2.0- Environment configurations (dev, staging, prod)- **IAM roles and policies** with least privilege
+
+- AWS Account with appropriate permissions
+
+- **Environment configurations** (dev, staging, prod)
+
+## Quick Start
+
+## Components
 
 1. **Clone Repository**
 
-   ```bash## 📋 Prerequisites
+   ```bash## Components
 
    git clone https://github.com/hossamaladdin/Tap_Assignment.git
 
-   cd Tap_Assignment### Required Tools
-
-   ```- [Terraform](https://www.terraform.io/downloads.html) >= 1.0
-
-- [AWS CLI](https://aws.amazon.com/cli/) >= 2.0
-
-2. **Initialize Terraform**- AWS Account with appropriate permissions
-
-   ```bash
-
-   terraform init### AWS Permissions Required
-
-   ```- VPC and networking resources
-
-- RDS instance management
-
-3. **Deploy Infrastructure**- Secrets Manager
-
-   ```bash- IAM roles and policies
-
-   # For development environment- CloudWatch
-
-   terraform apply -var-file=environments/dev.tfvars- EC2 (if using bastion host)
-
-   
-
-   # For staging environment  ### AWS CLI Configuration
-
-   terraform apply -var-file=environments/staging.tfvars```bash
-
-   aws configure
-
-   # For production environment# Enter your AWS Access Key ID
-
-   terraform apply -var-file=environments/prod.tfvars# Enter your AWS Secret Access Key
-
-   ```# Default region name: us-east-1
-
-# Default output format: json
-
-4. **Get Outputs**```
-
-   ```bash
-
-   terraform output## 🚀 Quick Start
+   cd Tap_Assignment- **VPC Module**: Network with private subnets across multiple AZs
 
    ```
 
-### 1. Clone the Repository
+- **RDS Module**: Multi-AZ SQL Server with parameter/option groups- **VPC Module**: Network with private subnets across multiple AZs
 
-## Project Structure```bash
+2. **Initialize Terraform**
 
-git clone https://github.com/hossamaladdin/Tap_Assignment.git
+   ```bash- **Secrets Module**: Database credential management  - **RDS Module**: Multi-AZ SQL Server with parameter/option groups
 
-```cd Tap_Assignment
+   terraform init
 
-├── main.tf                 # Main configuration```
+   ```- **IAM Module**: Monitoring and access roles- **Secrets Module**: Database credential management
+
+
+
+3. **Deploy Infrastructure**- **IAM Module**: Monitoring and access roles
+
+   ```bash
+
+   # For development environment## Prerequisites
+
+   terraform apply -var-file=environments/dev.tfvars
+
+   ## Features
+
+   # For staging environment  
+
+   terraform apply -var-file=environments/staging.tfvars- Terraform >= 1.0
+
+   
+
+   # For production environment- AWS CLI >= 2.0- Multi-AZ deployment for high availability
+
+   terraform apply -var-file=environments/prod.tfvars
+
+   ```- AWS Account with appropriate permissions- Encrypted storage and secure credentials
+
+
+
+4. **Get Outputs**- CloudWatch monitoring and Performance Insights
+
+   ```bash
+
+   terraform output## Quick Start- Environment-specific configurations (dev/staging/prod)
+
+   ```
+
+- Storage autoscaling
+
+## Project Structure
+
+1. **Clone Repository**
+
+```
+
+├── main.tf                 # Main configuration   ```bash## 📋 Prerequisites
 
 ├── variables.tf            # Input variables
 
-├── outputs.tf              # Output values### 2. Initialize Terraform
+├── outputs.tf              # Output values   git clone https://github.com/hossamaladdin/Tap_Assignment.git
 
-├── versions.tf             # Provider versions```bash
+├── versions.tf             # Provider versions
 
-├── providers.tf            # Provider configurationterraform init
+├── providers.tf            # Provider configuration   cd Tap_Assignment### Required Tools
 
-├── environments/           # Environment configs```
+├── environments/           # Environment configs
 
-│   ├── dev.tfvars
+│   ├── dev.tfvars   ```- [Terraform](https://www.terraform.io/downloads.html) >= 1.0
 
-│   ├── staging.tfvars### 3. Review and Customize Configuration
+│   ├── staging.tfvars
+
+│   └── prod.tfvars- [AWS CLI](https://aws.amazon.com/cli/) >= 2.0
+
+├── modules/                # Terraform modules
+
+│   ├── vpc/               # Network infrastructure2. **Initialize Terraform**- AWS Account with appropriate permissions
+
+│   ├── rds/               # Database infrastructure
+
+│   ├── secrets/           # Credential management   ```bash
+
+│   └── iam/               # Access management
+
+└── scripts/               # Helper scripts   terraform init### AWS Permissions Required
+
+    ├── connect_to_rds.sh  # Database connection
+
+    ├── setup.sh           # Project setup   ```- VPC and networking resources
+
+    └── update_secret.sh   # Secret management
+
+```- RDS instance management
+
+
+
+## Configuration3. **Deploy Infrastructure**- Secrets Manager
+
+
+
+### Environment Files   ```bash- IAM roles and policies
+
+Each environment file contains configuration for instance sizing, storage, backups, and security settings.
+
+   # For development environment- CloudWatch
+
+### Key Variables
+
+- `environment`: Environment name (dev/staging/prod)   terraform apply -var-file=environments/dev.tfvars- EC2 (if using bastion host)
+
+- `rds_instance_class`: RDS instance size
+
+- `rds_allocated_storage`: Initial storage in GB   
+
+- `rds_backup_retention_period`: Backup retention days
+
+- `allowed_cidr_blocks`: IP ranges for database access   # For staging environment  ### AWS CLI Configuration
+
+
+
+## Connecting to RDS   terraform apply -var-file=environments/staging.tfvars```bash
+
+
+
+Use the connection script:   aws configure
+
+```bash
+
+./scripts/connect_to_rds.sh <rds-endpoint>   # For production environment# Enter your AWS Access Key ID
+
+```
+
+   terraform apply -var-file=environments/prod.tfvars# Enter your AWS Secret Access Key
+
+Or connect manually:
+
+- **Server**: RDS endpoint (from terraform output)   ```# Default region name: us-east-1
+
+- **Authentication**: SQL Server Authentication
+
+- **Username**: sqladmin# Default output format: json
+
+- **Password**: Retrieved from AWS Secrets Manager
+
+4. **Get Outputs**```
+
+## Outputs
+
+   ```bash
+
+- `rds_endpoint`: Database connection endpoint
+
+- `rds_master_username`: Master username   terraform output## 🚀 Quick Start
+
+- `db_secret_arn`: Secrets Manager ARN for credentials
+
+- `rds_instance_id`: RDS instance identifier   ```
+
+
+
+## Security### 1. Clone the Repository
+
+
+
+- Database runs in private subnets## Project Structure```bash
+
+- Encryption at rest enabled
+
+- Credentials stored in AWS Secrets Managergit clone https://github.com/hossamaladdin/Tap_Assignment.git
+
+- Security groups restrict access
+
+- IAM roles follow least privilege```cd Tap_Assignment
+
+
+
+## Monitoring├── main.tf                 # Main configuration```
+
+
+
+- CloudWatch logs for SQL Server error and agent logs├── variables.tf            # Input variables
+
+- Performance Insights for query-level monitoring  
+
+- Enhanced monitoring at 60-second intervals├── outputs.tf              # Output values### 2. Initialize Terraform
+
+
+
+## Environment Sizing├── versions.tf             # Provider versions```bash
+
+
+
+- **Development**: db.t3.large, 100GB, 3-day backups├── providers.tf            # Provider configurationterraform init
+
+- **Staging**: db.m5.xlarge, 200GB, 7-day backups
+
+- **Production**: db.m5.2xlarge, 500GB, 14-day backups├── environments/           # Environment configs```
+
+
+
+## License│   ├── dev.tfvars
+
+
+
+MIT License│   ├── staging.tfvars### 3. Review and Customize Configuration
 
 │   └── prod.tfvarsEdit the environment-specific configuration file:
 
