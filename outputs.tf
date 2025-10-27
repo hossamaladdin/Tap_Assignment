@@ -1,22 +1,20 @@
-# VPC Outputs
 output "vpc_id" {
-  description = "ID of the VPC"
+  description = "VPC ID"
   value       = module.vpc.vpc_id
 }
 
 output "private_subnet_ids" {
-  description = "IDs of private subnets"
+  description = "Private subnet IDs"
   value       = module.vpc.private_subnet_ids
 }
 
 output "public_subnet_ids" {
-  description = "IDs of public subnets"
+  description = "Public subnet IDs"
   value       = module.vpc.public_subnet_ids
 }
 
-# RDS Outputs
 output "rds_endpoint" {
-  description = "RDS instance endpoint"
+  description = "RDS endpoint"
   value       = module.rds.db_instance_endpoint
 }
 
@@ -26,25 +24,22 @@ output "rds_instance_id" {
 }
 
 output "rds_instance_arn" {
-  description = "RDS instance ARN"
+  description = "RDS ARN"
   value       = module.rds.db_instance_arn
 }
 
 output "rds_port" {
-  description = "RDS instance port"
+  description = "RDS port"
   value       = module.rds.db_instance_port
 }
 
-# Removed sensitive outputs as they are included in secrets
-
-# Secrets Manager Outputs
 output "db_secret_arn" {
-  description = "ARN of the Secrets Manager secret for database credentials"
+  description = "Database secret ARN"
   value       = module.secrets.secret_arn
 }
 
 output "db_secret_name" {
-  description = "Name of the Secrets Manager secret"
+  description = "Database secret name"
   value       = module.secrets.secret_name
 }
 
@@ -54,9 +49,8 @@ output "rds_security_group_id" {
   value       = module.rds.security_group_id
 }
 
-# Connection Information
 output "connection_info" {
-  description = "Connection information for the RDS instance"
+  description = "RDS connection info"
   value = {
     endpoint        = module.rds.db_instance_endpoint
     port            = module.rds.db_instance_port
@@ -66,8 +60,7 @@ output "connection_info" {
   sensitive = true
 }
 
-# CloudWatch Log Groups
 output "cloudwatch_log_groups" {
-  description = "CloudWatch log groups for RDS"
+  description = "CloudWatch log groups"
   value       = module.rds.cloudwatch_log_groups
 }

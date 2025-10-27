@@ -1,26 +1,24 @@
-# Required variables (minimal set needed for deployment)
 variable "environment" {
-  description = "Environment (dev, staging, prod)"
+  description = "Environment name"
   type        = string
   validation {
-    condition     = contains(["dev", "staging", "prod"], var.environment)
-    error_message = "Environment must be one of: dev, staging, prod"
+    condition     = length(var.environment) > 0 && length(var.environment) <= 20
+    error_message = "Environment name must be between 1 and 20 characters"
   }
 }
 
 variable "project_name" {
-  description = "Name of the project"
+  description = "Project name"
   type        = string
   default     = "tap-sqlserver"
 }
 
 variable "aws_region" {
-  description = "AWS region for deployment"
+  description = "AWS region"
   type        = string
   default     = "us-east-1"
 }
 
-# Optional overrides - all other configurations are handled by environment-specific settings
 variable "allowed_cidr_blocks" {
   description = "CIDR blocks allowed to access RDS"
   type        = list(string)

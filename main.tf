@@ -1,43 +1,23 @@
-# Local variables for resource naming and tagging
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
+  is_prod = contains(["prod", "production"], lower(var.environment))
+  is_staging = contains(["stage", "staging", "test"], lower(var.environment))
+  is_dev = !local.is_prod && !local.is_staging
   
-  # Automatically determine environment-specific settings
-  env_configs = {
-    dev = {
-      instance_class        = "db.t3.large"
-      multi_az             = false
-      backup_retention     = 3
-      deletion_protection  = false
-      allocated_storage    = 100
-      max_allocated_storage = 200
-      auto_minor_version_upgrade = true
-      storage_type         = "gp3"
-    }
-    staging = {
-      instance_class        = "db.m5.xlarge"
-      multi_az             = true
-      backup_retention     = 7
-      deletion_protection  = true
-      allocated_storage    = 200
-      max_allocated_storage = 500
-      auto_minor_version_upgrade = false
-      storage_type         = "gp3"
-    }
-    prod = {
-      instance_class        = "db.m5.2xlarge"
-      multi_az             = true
-      backup_retention     = 14
-      deletion_protection  = true
-      allocated_storage    = 500
-      max_allocated_storage = 1000
-      auto_minor_version_upgrade = false
-      storage_type         = "io1"
-    }
-  }
+  env_short = local.is_prod ? "prod" : (local.is_staging ? "stage" : "dev")
+  name_prefix = "${var.project_name}-${local.env_short}"
 
-  # Get environment-specific config with dev as fallback
-  env_config = lookup(local.env_configs, var.environment, local.env_configs.dev)
+  env_config = {
+    instance_class = local.is_prod ? "db.m5.2xlarge" : (local.is_staging ? "db.m5.xlarge" : "db.m5.large")
+    multi_az = local.is_prod || local.is_staging
+    backup_retention = local.is_prod ? 14 : (local.is_staging ? 7 : 3)
+    deletion_protection = local.is_prod || local.is_staging
+    allocated_storage = local.is_prod ? 500 : (local.is_staging ? 200 : 100)
+    max_allocated_storage = local.is_prod ? 1000 : (local.is_staging ? 500 : 200)
+    storage_type = local.is_prod ? "io1" : "gp3"
+    auto_minor_version_upgrade = local.is_dev
+    skip_final_snapshot = local.is_dev
+    delete_automated_backups = local.is_dev || local.is_staging
+  }
   
   common_tags = {
     Environment = var.environment
@@ -46,7 +26,6 @@ locals {
   }
 }
 
-# VPC Module - Creates the networking infrastructure
 module "vpc" {
   source = "./modules/vpc"
 
@@ -54,7 +33,6 @@ module "vpc" {
   tags        = local.common_tags
 }
 
-# Secrets Manager Module - Handles database credentials
 module "secrets" {
   source = "./modules/secrets"
 
@@ -62,7 +40,6 @@ module "secrets" {
   tags        = local.common_tags
 }
 
-# IAM Module - Creates necessary IAM roles
 module "iam" {
   source = "./modules/iam"
 
@@ -70,7 +47,6 @@ module "iam" {
   tags        = local.common_tags
 }
 
-# RDS Module - Creates the SQL Server instance
 module "rds" {
   source = "./modules/rds"
   depends_on = [module.vpc, module.secrets, module.iam]
@@ -81,7 +57,6 @@ module "rds" {
   master_password     = module.secrets.db_password
   monitoring_role_arn = module.iam.rds_monitoring_role_arn
   
-  # Use environment-specific configurations
   instance_class           = local.env_config.instance_class
   multi_az                = local.env_config.multi_az
   backup_retention_period = local.env_config.backup_retention
@@ -90,6 +65,8 @@ module "rds" {
   max_allocated_storage   = local.env_config.max_allocated_storage
   storage_type           = local.env_config.storage_type
   auto_minor_version_upgrade = local.env_config.auto_minor_version_upgrade
+  skip_final_snapshot     = local.env_config.skip_final_snapshot
+  delete_automated_backups = local.env_config.delete_automated_backups
   
   tags = local.common_tags
 }

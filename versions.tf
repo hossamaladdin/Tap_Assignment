@@ -11,14 +11,4 @@ terraform {
       version = "~> 3.5"
     }
   }
-
-  # Backend configuration for remote state storage
-  # Uncomment and configure for production use
-  # backend "s3" {
-  #   bucket         = "your-terraform-state-bucket"
-  #   key            = "rds-sqlserver/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true
-  #   dynamodb_table = "terraform-state-lock"
-  # }
 }

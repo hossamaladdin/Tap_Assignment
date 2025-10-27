@@ -1,117 +1,64 @@
-# AWS RDS SQL Server Infrastructure
+# Terraform AWS RDS SQL Server
 
-This project provides Terraform configurations for deploying an AWS RDS SQL Server infrastructure across different environments (dev, staging, and prod).
+## Usage Options
 
-## Overview
+### Option 1: Simple Commands (One Environment at a Time)
+```bash
+terraform init
 
-This infrastructure deploys:
-- RDS SQL Server with environment-specific configurations
-- VPC with public and private subnets across multiple availability zones
-- NAT Gateways for private subnet connectivity
-- Security groups and IAM roles
-- Secrets management for database credentials
-- CloudWatch logging and monitoring
+# Deploy any environment (replaces previous)
+terraform apply -var="environment=dev"
+terraform apply -var="environment=staging"  
+terraform apply -var="environment=production"
 
-## Prerequisites
-
-- Terraform >= 1.0
-- AWS CLI >= 2.0
-- AWS Account with appropriate permissions
-
-## Project Structure
-
-```
-├── main.tf                 # Main configuration
-├── variables.tf            # Input variables
-├── outputs.tf             # Output definitions
-├── versions.tf            # Provider versions
-├── providers.tf           # Provider configuration
-├── modules/              # Terraform modules
-│   ├── vpc/             # Network infrastructure
-│   ├── rds/             # Database infrastructure
-│   ├── secrets/         # Credential management
-│   └── iam/             # Access management
-└── terraform.tfvars.example  # Example variables file
+# Destroy current environment
+terraform destroy -var="environment=<current-env>"
 ```
 
-## Environment Configurations
+### Option 2: Multiple Environments (Separate State Files)
+```bash
+terraform init
 
-Three environments are supported with different configurations:
+# Deploy multiple environments simultaneously 
+terraform apply -var="environment=dev" -state="states/dev.tfstate"
+terraform apply -var="environment=staging" -state="states/staging.tfstate"
+terraform apply -var="environment=production" -state="states/production.tfstate"
 
-### Development (dev)
-- Instance Class: db.t3.large
-- Storage: 100GB initial, max 200GB
-- Multi-AZ: Disabled
-- Backup Retention: 3 days
-- Storage Type: gp3
+# Destroy specific environment
+terraform destroy -var="environment=dev" -state="states/dev.tfstate"
+```
 
-### Staging
-- Instance Class: db.m5.xlarge
-- Storage: 200GB initial, max 500GB
-- Multi-AZ: Enabled
-- Backup Retention: 7 days
-- Storage Type: gp3
+### Option 3: Auto-Workspaces (Recommended for Parallel)
+```bash
+terraform init
 
-### Production (prod)
-- Instance Class: db.m5.2xlarge
-- Storage: 500GB initial, max 1000GB
-- Multi-AZ: Enabled
-- Backup Retention: 14 days
-- Storage Type: io1
-- Enhanced security settings
+# Create workspaces for each environment (one-time setup)
+terraform workspace new dev
+terraform workspace new staging
+terraform workspace new production
 
-## Deployment Instructions
+# Deploy in parallel - each command in separate terminal
+terraform workspace select dev && terraform apply -var="environment=dev"
+terraform workspace select staging && terraform apply -var="environment=staging"  
+terraform workspace select production && terraform apply -var="environment=production"
 
-1. **Initialize Terraform**
-   ```bash
-   terraform init
-   ```
+# Or deploy sequentially
+terraform workspace select dev && terraform apply -var="environment=dev"
+terraform workspace select staging && terraform apply -var="environment=staging"
+```
 
-2. **Plan Deployment** (choose environment)
-   ```bash
-   # Development
-   terraform plan -var="environment=dev"
+## Environment Types
+- **dev**: Basic performance, single-AZ, minimal backups, **skip snapshots on destroy**
+- **staging**: Medium performance, multi-AZ, extended backups, **delete automated backups**  
+- **production**: High performance, multi-AZ, full security, **keeps final snapshots**
 
-   # Staging
-   terraform plan -var="environment=staging"
+## Snapshot Management
+- **Dev**: `skip_final_snapshot = true` + `delete_automated_backups = true` (fast destroy)
+- **Staging**: `skip_final_snapshot = false` + `delete_automated_backups = true` (safer)
+- **Production**: `skip_final_snapshot = false` + `delete_automated_backups = false` (maximum protection)
 
-   # Production
-   terraform plan -var="environment=prod"
-   ```
-
-3. **Apply Configuration**
-   ```bash
-   # Development
-   terraform apply -var="environment=dev"
-
-   # Staging
-   terraform apply -var="environment=staging"
-
-   # Production
-   terraform apply -var="environment=prod"
-   ```
-
-4. **View Outputs**
-   ```bash
-   terraform output
-   ```
-
-## Outputs
-
-- `rds_endpoint`: Database connection endpoint
-- `rds_port`: Database port (1433)
-- `db_secret_name`: Name of the secret in AWS Secrets Manager
-- `db_secret_arn`: ARN of the secret in AWS Secrets Manager
-- `vpc_id`: ID of the created VPC
-- `private_subnet_ids`: List of private subnet IDs
-- `public_subnet_ids`: List of public subnet IDs
-- `rds_security_group_id`: ID of the RDS security group
-
-## Security Features
-
-- RDS instance deployed in private subnets
-- Encryption at rest enabled
-- Secure credential management using AWS Secrets Manager
-- Security groups with minimal required access
-- IAM roles following least privilege principle
-- CloudWatch logging enabled
+## What Happens Without State Management?
+If you run without `-state` parameter, Terraform uses `terraform.tfstate`:
+- **Same file for all environments** → environments replace each other
+- **Only one environment exists** at any time
+- **Simpler for testing**, problematic for real use

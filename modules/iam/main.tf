@@ -1,4 +1,3 @@
-# IAM Role for RDS Enhanced Monitoring
 resource "aws_iam_role" "rds_monitoring" {
   name_prefix = "${var.name_prefix}-rds-monitoring-"
 
@@ -23,13 +22,11 @@ resource "aws_iam_role" "rds_monitoring" {
   )
 }
 
-# Attach AWS managed policy for RDS Enhanced Monitoring
 resource "aws_iam_role_policy_attachment" "rds_monitoring" {
   role       = aws_iam_role.rds_monitoring.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
 
-# IAM Role for EC2 instances to access Secrets Manager
 resource "aws_iam_role" "ec2_secrets_access" {
   name_prefix = "${var.name_prefix}-ec2-secrets-"
 
@@ -54,7 +51,6 @@ resource "aws_iam_role" "ec2_secrets_access" {
   )
 }
 
-# IAM Policy for Secrets Manager access
 resource "aws_iam_policy" "secrets_access" {
   name_prefix = "${var.name_prefix}-secrets-access-"
   description = "Policy for accessing RDS credentials in Secrets Manager"
@@ -89,13 +85,11 @@ resource "aws_iam_policy" "secrets_access" {
   tags = var.tags
 }
 
-# Attach Secrets Manager policy to EC2 role
 resource "aws_iam_role_policy_attachment" "ec2_secrets_access" {
   role       = aws_iam_role.ec2_secrets_access.name
   policy_arn = aws_iam_policy.secrets_access.arn
 }
 
-# IAM Instance Profile for EC2
 resource "aws_iam_instance_profile" "ec2_secrets_access" {
   name_prefix = "${var.name_prefix}-ec2-secrets-"
   role        = aws_iam_role.ec2_secrets_access.name

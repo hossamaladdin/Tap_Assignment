@@ -1,4 +1,3 @@
-# VPC
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -12,7 +11,6 @@ resource "aws_vpc" "main" {
   )
 }
 
-# Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
@@ -24,7 +22,6 @@ resource "aws_internet_gateway" "main" {
   )
 }
 
-# Private Subnets
 resource "aws_subnet" "private" {
   count             = length(var.private_subnet_cidrs)
   vpc_id            = aws_vpc.main.id
@@ -40,7 +37,6 @@ resource "aws_subnet" "private" {
   )
 }
 
-# Public Subnets
 resource "aws_subnet" "public" {
   count                   = length(var.public_subnet_cidrs)
   vpc_id                  = aws_vpc.main.id
@@ -57,7 +53,6 @@ resource "aws_subnet" "public" {
   )
 }
 
-# Elastic IPs for NAT Gateways
 resource "aws_eip" "nat" {
   count  = var.enable_nat_gateway ? length(var.public_subnet_cidrs) : 0
   domain = "vpc"
@@ -72,7 +67,6 @@ resource "aws_eip" "nat" {
   depends_on = [aws_internet_gateway.main]
 }
 
-# NAT Gateways
 resource "aws_nat_gateway" "main" {
   count         = var.enable_nat_gateway ? length(var.public_subnet_cidrs) : 0
   allocation_id = aws_eip.nat[count.index].id
@@ -88,7 +82,6 @@ resource "aws_nat_gateway" "main" {
   depends_on = [aws_internet_gateway.main]
 }
 
-# Public Route Table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -105,14 +98,12 @@ resource "aws_route_table" "public" {
   )
 }
 
-# Public Route Table Association
 resource "aws_route_table_association" "public" {
   count          = length(var.public_subnet_cidrs)
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
-# Private Route Tables
 resource "aws_route_table" "private" {
   count  = length(var.private_subnet_cidrs)
   vpc_id = aws_vpc.main.id
@@ -125,22 +116,18 @@ resource "aws_route_table" "private" {
   )
 }
 
-# Private Route Table Routes (to NAT Gateway)
 resource "aws_route" "private_nat" {
   count                  = var.enable_nat_gateway ? length(var.private_subnet_cidrs) : 0
   route_table_id         = aws_route_table.private[count.index].id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.main[count.index].id
 }
-
-# Private Route Table Association
 resource "aws_route_table_association" "private" {
   count          = length(var.private_subnet_cidrs)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[count.index].id
 }
 
-# VPC Flow Logs (optional but recommended)
 resource "aws_flow_log" "main" {
   iam_role_arn    = aws_iam_role.vpc_flow_log.arn
   log_destination = aws_cloudwatch_log_group.vpc_flow_log.arn
@@ -155,10 +142,10 @@ resource "aws_flow_log" "main" {
   )
 }
 
-# CloudWatch Log Group for VPC Flow Logs
 resource "aws_cloudwatch_log_group" "vpc_flow_log" {
   name              = "/aws/vpc/${var.name_prefix}"
   retention_in_days = 7
+  skip_destroy      = false
 
   tags = merge(
     var.tags,
@@ -167,8 +154,6 @@ resource "aws_cloudwatch_log_group" "vpc_flow_log" {
     }
   )
 }
-
-# IAM Role for VPC Flow Logs
 resource "aws_iam_role" "vpc_flow_log" {
   name = "${var.name_prefix}-vpc-flow-log-role"
 
@@ -188,7 +173,6 @@ resource "aws_iam_role" "vpc_flow_log" {
   tags = var.tags
 }
 
-# IAM Policy for VPC Flow Logs
 resource "aws_iam_role_policy" "vpc_flow_log" {
   name = "${var.name_prefix}-vpc-flow-log-policy"
   role = aws_iam_role.vpc_flow_log.id
