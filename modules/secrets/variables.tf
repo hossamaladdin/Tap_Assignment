@@ -11,8 +11,8 @@ variable "db_master_username" {
   sensitive   = true
 }
 
-variable "db_master_password" {
-  description = "Master password for the database (leave empty to auto-generate)"
+variable "master_password" {
+  description = "Master password for the database"
   type        = string
   default     = ""
   sensitive   = true

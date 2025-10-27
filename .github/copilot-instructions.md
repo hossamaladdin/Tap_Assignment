@@ -2,75 +2,111 @@
 
 ## Project Architecture
 
-This is a Terraform project for deploying AWS RDS SQL Server with environment-aware configuration. The architecture uses:
+This is a Terraform project for deploying AWS RDS SQL Server with **per-environment configuration**. The architecture uses:
 
-- **Modular design**: Four core modules (`vpc`, `rds`, `iam`, `secrets`) orchestrated by root `main.tf`
-- **Environment-based locals**: Intelligence lives in `main.tf` `locals` block, which dynamically configures resources based on environment detection
-- **State isolation**: Separate `.tfstate` files per environment (not workspaces) - see deployment commands below
+- **Modular design**: Five core modules (`vpc`, `rds`, `iam`, `secrets`, `deployment`) with environment-specific wrappers
+- **Per-environment directories**: Each environment (`dev`, `staging`, `prod`) has its own directory with backend, provider, and configuration
+- **State isolation**: Separate backends per environment directory - no workspace switching needed
+- **Clean separation**: The `deployment` module is generic; environment-specific values live in `environments/*/main.tf`
 
-## Critical Environment Logic
+## Environment Structure
 
-The `main.tf` locals block is the heart of environment configuration:
+Each environment directory contains:
+- `backend.tf` - Local backend configuration (state file path)
+- `versions.tf` - Terraform and provider version requirements
+- `provider.tf` - AWS provider configuration with environment tags
+- `variables.tf` - Input variable declarations
+- `terraform.tfvars` - Environment-specific variable values
+- `main.tf` - Module call with **all environment-specific RDS configuration**
+- `outputs.tf` - Output definitions
 
-```terraform
-locals {
-  environment = terraform.workspace == "default" ? "dev" : terraform.workspace
-  is_prod = contains(["prod", "production"], lower(local.environment))
-  is_staging = contains(["stage", "staging", "test"], lower(local.environment))
-  is_dev = !local.is_prod && !local.is_staging
-  
-  env_config = {
-    # Instance sizing, Multi-AZ, backup retention, deletion protection, etc.
-  }
-}
-```
-
-When modifying environment behavior:
-- **Never hardcode** environment-specific values in modules
-- Add configuration to `env_config` map in `main.tf` locals
-- Use ternary operators for 3-tier logic: `prod ? X : (staging ? Y : Z)`
+**Key principle**: Environment configuration lives in `environments/{env}/main.tf`, not in the deployment module.
 
 ## Deployment Workflow
 
-**Critical**: Use `-var-file` + `-state` pattern, NOT workspaces alone:
+Deploy from the environment directory (no `-var-file` or `-state` flags needed):
 
 ```bash
 # Development
-terraform plan -var-file="terraform-dev.tfvars" -state="dev.tfstate"
-terraform apply -var-file="terraform-dev.tfvars" -state="dev.tfstate"
+cd environments/dev
+terraform init
+terraform plan
+terraform apply
 
 # Production
-terraform plan -var-file="terraform-production.tfvars" -state="production.tfstate"
-terraform apply -var-file="terraform-production.tfvars" -state="production.tfstate"
+cd environments/prod
+terraform init
+terraform plan
+terraform apply
 ```
 
-**Why this matters**: Without explicit `-state` flags, all environments share `terraform.tfstate`, causing one environment to destroy another.
+Each environment manages its own state file automatically via `backend.tf`.
 
-## Snapshot & Deletion Behavior
+## Module Architecture
 
-Environment-specific destruction behavior is defined in `env_config`:
+### Deployment Module (`modules/deployment`)
 
-- **Dev**: `skip_final_snapshot = true`, `delete_automated_backups = true` (fast, clean teardown)
-- **Staging**: `skip_final_snapshot = false`, `delete_automated_backups = true` (final snapshot kept)
-- **Production**: `skip_final_snapshot = false`, `delete_automated_backups = false` (maximum data retention)
+Generic orchestration module that:
+- Accepts **all configuration as variables** (no environment detection logic)
+- Calls the core infrastructure modules (vpc, rds, iam, secrets)
+- Uses `var.environment` for naming and tagging only
 
-When adding new boolean flags, follow this pattern in `env_config`.
+**Critical**: The deployment module does NOT contain environment-specific logic. It's a pass-through orchestrator.
 
-## Module Communication Pattern
+### Core Infrastructure Modules
 
-Modules receive **all** configuration from root `main.tf` - they don't compute environment logic:
+- **vpc**: Network infrastructure + S3 VPC endpoint + Flow Logs
+- **rds**: SQL Server instance with parameter/option groups
+- **iam**: RDS Enhanced Monitoring role + Secrets Manager access
+- **secrets**: (Prepared for future RDS endpoint storage)
+
+## Environment Configuration Pattern
+
+Environment-specific settings are defined directly in `environments/{env}/main.tf`:
 
 ```terraform
-module "rds" {
-  source = "./modules/rds"
+module "deployment" {
+  source = "../../modules/deployment"
   
-  instance_class = local.env_config.instance_class  # From locals, not module defaults
-  multi_az = local.env_config.multi_az
-  # ... all env-specific values
+  environment = "prod"  # or "dev", "staging"
+  
+  # Production-specific values
+  instance_class = "db.m5.2xlarge"
+  multi_az = true
+  storage_type = "io1"
+  iops = 2500
+  # ... etc
 }
 ```
 
-**Module variables** have defaults only for documentation/optional features. Required environment behavior comes from root.
+**Never add conditional logic** based on environment to the deployment module. Add the configuration to the environment wrapper instead.
+
+## Snapshot & Deletion Behavior
+
+Environment-specific destruction behavior is configured in each environment's `main.tf`:
+
+- **Dev** (`environments/dev/main.tf`): `skip_final_snapshot = true`, `delete_automated_backups = true` (fast, clean teardown)
+- **Staging** (`environments/staging/main.tf`): `skip_final_snapshot = false`, `delete_automated_backups = true` (final snapshot kept)
+- **Production** (`environments/prod/main.tf`): `skip_final_snapshot = false`, `delete_automated_backups = false` (maximum data retention)
+
+To change behavior: edit the environment's `main.tf` module call.
+
+## Adding New Environments or Modifying Configuration
+
+**Add new environment tier**:
+1. Copy an existing `environments/{env}` directory
+2. Update `backend.tf` with new state file path
+3. Modify `main.tf` module call with environment-specific values
+4. Update `terraform.tfvars` as needed
+
+**Change RDS configuration for an environment**:
+- Edit `environments/{env}/main.tf` module call parameters
+- Do NOT modify the `modules/deployment` module
+
+**Add new infrastructure**:
+- Add to appropriate core module (`vpc`, `rds`, `iam`, `secrets`)
+- Wire through `modules/deployment` if needed
+- Pass configuration from environment wrappers
 
 ## Security & IAM Structure
 
@@ -128,23 +164,36 @@ Module resources merge with `merge(var.tags, { Name = "..." })` pattern.
 ## File Organization
 
 ```
-main.tf              # Root orchestration + environment logic
-variables.tf         # Minimal root variables (project_name, region, etc.)
-outputs.tf           # Exposes module outputs + sensitive connection_info
-terraform-{env}.tfvars  # Environment-specific variable values
+environments/
+  dev/
+    backend.tf           # Local backend: ../../dev.tfstate
+    versions.tf          # Terraform/provider requirements
+    provider.tf          # AWS provider config
+    variables.tf         # Input variables
+    terraform.tfvars     # Dev-specific values
+    main.tf             # Module call with dev RDS config
+    outputs.tf          # Output definitions
+  staging/
+    (same structure as dev)
+  prod/
+    (same structure as dev)
 modules/
-  vpc/              # Network infrastructure + S3 endpoint
-  rds/              # SQL Server instance + parameter/option groups
-  iam/              # Monitoring role + secrets access role
-  secrets/          # (Not currently used, prepared for future)
+  deployment/          # Orchestration module (no env logic)
+    main.tf
+    variables.tf
+    outputs.tf
+  vpc/                # Network infrastructure + S3 endpoint
+  rds/                # SQL Server instance + parameter/option groups
+  iam/                # Monitoring role + secrets access role
+  secrets/            # (Not currently used, prepared for future)
 ```
 
 ## Common Modifications
 
-**Add new environment tier**: Update `locals.env_config` map with new conditional logic  
-**Change RDS parameters**: Edit `aws_db_parameter_group.sqlserver` in `modules/rds/main.tf`  
-**Adjust backup windows**: Modify `backup_window`/`maintenance_window` in `terraform-{env}.tfvars` or module defaults  
-**Add security group rules**: Use `aws_security_group_rule` resources in `modules/rds/main.tf` (count-based for CIDR, loop for SG IDs)
+**Change environment RDS config**: Edit `environments/{env}/main.tf` module parameters  
+**Adjust RDS parameters**: Edit `aws_db_parameter_group.sqlserver` in `modules/rds/main.tf`  
+**Add security group rules**: Use `aws_security_group_rule` resources in `modules/rds/main.tf`  
+**Add new module variable**: Add to `modules/deployment/variables.tf` and pass from environment wrappers
 
 ## Backend Configuration
 

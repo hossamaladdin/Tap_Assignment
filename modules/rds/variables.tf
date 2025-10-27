@@ -189,7 +189,7 @@ variable "auto_minor_version_upgrade" {
 }
 
 variable "kms_key_id" {
-  description = "Optional customer-managed KMS key ID/ARN for storage encryption (defaults AWS-managed if null)."
+  description = "Optional customer-managed KMS key ID/ARN for storage encryption"
   type        = string
   default     = null
 }
