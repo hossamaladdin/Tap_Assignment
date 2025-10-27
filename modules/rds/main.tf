@@ -1,3 +1,12 @@
+resource "random_password" "master" {
+  length  = 16
+  special = true
+  upper   = true
+  lower   = true
+  numeric = true
+  override_special = "!#$%&*()-_=+[]{}:?"
+}
+
 resource "aws_db_subnet_group" "main" {
   name       = "${var.name_prefix}-db-subnet-group"
   subnet_ids = var.subnet_ids
@@ -132,7 +141,7 @@ resource "aws_db_instance" "sqlserver" {
 
   db_name  = null
   username = var.master_username
-  password = var.master_password
+  password = random_password.master.result
   port     = 1433
   timezone = var.timezone
 

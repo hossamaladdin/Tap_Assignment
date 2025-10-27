@@ -33,14 +33,16 @@ output "rds_port" {
   value       = module.rds.db_instance_port
 }
 
-output "db_secret_arn" {
-  description = "Database secret ARN"
-  value       = module.secrets.secret_arn
+output "db_username" {
+  description = "Database master username"
+  value       = module.rds.master_username
+  sensitive   = true
 }
 
-output "db_secret_name" {
-  description = "Database secret name"
-  value       = module.secrets.secret_name
+output "db_password" {
+  description = "Database master password"
+  value       = module.rds.master_password
+  sensitive   = true
 }
 
 # Security Group Outputs
@@ -52,10 +54,11 @@ output "rds_security_group_id" {
 output "connection_info" {
   description = "RDS connection info"
   value = {
-    endpoint        = module.rds.db_instance_endpoint
-    port            = module.rds.db_instance_port
-    secret_arn      = module.secrets.secret_arn
-    security_group  = module.rds.security_group_id
+    endpoint       = module.rds.db_instance_endpoint
+    port           = module.rds.db_instance_port
+    username       = module.rds.master_username
+    password       = module.rds.master_password
+    security_group = module.rds.security_group_id
   }
   sensitive = true
 }

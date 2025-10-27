@@ -1,12 +1,3 @@
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  validation {
-    condition     = length(var.environment) > 0 && length(var.environment) <= 20
-    error_message = "Environment name must be between 1 and 20 characters"
-  }
-}
-
 variable "project_name" {
   description = "Project name"
   type        = string
@@ -23,4 +14,16 @@ variable "allowed_cidr_blocks" {
   description = "CIDR blocks allowed to access RDS"
   type        = list(string)
   default     = []
+}
+
+variable "s3_endpoint" {
+  description = "S3 endpoint URL for VPC endpoint"
+  type        = string
+  default     = "com.amazonaws.vpce.us-east-1.s3"
+}
+
+variable "enable_s3_endpoint" {
+  description = "Enable S3 VPC endpoint"
+  type        = bool
+  default     = true
 }

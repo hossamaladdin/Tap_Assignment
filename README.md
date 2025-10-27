@@ -1,51 +1,42 @@
 # Terraform AWS RDS SQL Server
 
-## Usage Options
+## Environment Management with tfvars (Best Practice)
 
-### Option 1: Simple Commands (One Environment at a Time)
+### Single Command Deployment
 ```bash
 terraform init
 
-# Deploy any environment (replaces previous)
-terraform apply -var="environment=dev"
-terraform apply -var="environment=staging"  
-terraform apply -var="environment=production"
+# Development
+terraform plan -var-file="terraform-dev.tfvars" -state="dev.tfstate"
+terraform apply -var-file="terraform-dev.tfvars" -state="dev.tfstate"
 
-# Destroy current environment
-terraform destroy -var="environment=<current-env>"
+# Staging
+terraform plan -var-file="terraform-staging.tfvars" -state="staging.tfstate"
+terraform apply -var-file="terraform-staging.tfvars" -state="staging.tfstate"
+
+# Production
+terraform plan -var-file="terraform-production.tfvars" -state="production.tfstate"
+terraform apply -var-file="terraform-production.tfvars" -state="production.tfstate"
 ```
 
-### Option 2: Multiple Environments (Separate State Files)
-```bash
-terraform init
+### Environment-Specific Configuration Files
+- `terraform-dev.tfvars` - Development settings
+- `terraform-staging.tfvars` - Staging settings  
+- `terraform-production.tfvars` - Production settings
 
-# Deploy multiple environments simultaneously 
-terraform apply -var="environment=dev" -state="states/dev.tfstate"
-terraform apply -var="environment=staging" -state="states/staging.tfstate"
-terraform apply -var="environment=production" -state="states/production.tfstate"
+### What's the S3 VPC Endpoint?
+The S3 VPC Endpoint allows secure access to S3 from your VPC without going through the internet gateway:
 
-# Destroy specific environment
-terraform destroy -var="environment=dev" -state="states/dev.tfstate"
-```
+**Benefits:**
+- **Security:** Traffic stays within AWS network
+- **Cost:** No NAT Gateway charges for S3 traffic
+- **Performance:** Lower latency and higher bandwidth
+- **Compliance:** Meets strict network isolation requirements
 
-### Option 3: Auto-Workspaces (Recommended for Parallel)
-```bash
-terraform init
-
-# Create workspaces for each environment (one-time setup)
-terraform workspace new dev
-terraform workspace new staging
-terraform workspace new production
-
-# Deploy in parallel - each command in separate terminal
-terraform workspace select dev && terraform apply -var="environment=dev"
-terraform workspace select staging && terraform apply -var="environment=staging"  
-terraform workspace select production && terraform apply -var="environment=production"
-
-# Or deploy sequentially
-terraform workspace select dev && terraform apply -var="environment=dev"
-terraform workspace select staging && terraform apply -var="environment=staging"
-```
+**How it works:**
+- Creates a gateway endpoint in your VPC
+- Routes S3 traffic through AWS backbone network
+- No internet access required for S3 operations
 
 ## Environment Types
 - **dev**: Basic performance, single-AZ, minimal backups, **skip snapshots on destroy**

@@ -69,13 +69,6 @@ variable "master_username" {
   default     = "sqladmin"
 }
 
-variable "master_password" {
-  description = "Master password"
-  type        = string
-  sensitive   = true
-  default     = null
-}
-
 variable "license_model" {
   description = "License model"
   type        = string

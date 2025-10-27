@@ -39,3 +39,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "s3_endpoint" {
+  description = "S3 endpoint URL for VPC endpoint"
+  type        = string
+  default     = "com.amazonaws.us-east-1.s3"
+}
+
+variable "enable_s3_endpoint" {
+  description = "Enable S3 VPC endpoint"
+  type        = bool
+  default     = true
+}

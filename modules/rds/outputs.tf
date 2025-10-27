@@ -28,6 +28,17 @@ output "security_group_id" {
   value       = aws_security_group.rds.id
 }
 
+output "master_username" {
+  description = "Master username for the RDS instance"
+  value       = aws_db_instance.sqlserver.username
+}
+
+output "master_password" {
+  description = "Master password for the RDS instance"
+  value       = random_password.master.result
+  sensitive   = true
+}
+
 output "db_subnet_group_name" {
   description = "Name of the DB subnet group"
   value       = aws_db_subnet_group.main.name

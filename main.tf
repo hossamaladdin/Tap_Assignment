@@ -1,6 +1,8 @@
 locals {
-  is_prod = contains(["prod", "production"], lower(var.environment))
-  is_staging = contains(["stage", "staging", "test"], lower(var.environment))
+  environment = terraform.workspace == "default" ? "dev" : terraform.workspace
+  
+  is_prod = contains(["prod", "production"], lower(local.environment))
+  is_staging = contains(["stage", "staging", "test"], lower(local.environment))
   is_dev = !local.is_prod && !local.is_staging
   
   env_short = local.is_prod ? "prod" : (local.is_staging ? "stage" : "dev")
@@ -14,13 +16,14 @@ locals {
     allocated_storage = local.is_prod ? 500 : (local.is_staging ? 200 : 100)
     max_allocated_storage = local.is_prod ? 1000 : (local.is_staging ? 500 : 200)
     storage_type = local.is_prod ? "io1" : "gp3"
+    iops = local.is_prod ? 2500 : null  # Required for io1, 5 IOPS per GB (500GB * 5 = 2500)
     auto_minor_version_upgrade = local.is_dev
     skip_final_snapshot = local.is_dev
     delete_automated_backups = local.is_dev || local.is_staging
   }
   
   common_tags = {
-    Environment = var.environment
+    Environment = local.environment
     Project     = var.project_name
     ManagedBy   = "Terraform"
   }
@@ -29,15 +32,10 @@ locals {
 module "vpc" {
   source = "./modules/vpc"
 
-  name_prefix = local.name_prefix
-  tags        = local.common_tags
-}
-
-module "secrets" {
-  source = "./modules/secrets"
-
-  name_prefix = local.name_prefix
-  tags        = local.common_tags
+  name_prefix        = local.name_prefix
+  s3_endpoint        = var.s3_endpoint
+  enable_s3_endpoint = var.enable_s3_endpoint
+  tags              = local.common_tags
 }
 
 module "iam" {
@@ -49,12 +47,11 @@ module "iam" {
 
 module "rds" {
   source = "./modules/rds"
-  depends_on = [module.vpc, module.secrets, module.iam]
+  depends_on = [module.vpc, module.iam]
 
   name_prefix          = local.name_prefix
   vpc_id              = module.vpc.vpc_id
   subnet_ids          = module.vpc.private_subnet_ids
-  master_password     = module.secrets.db_password
   monitoring_role_arn = module.iam.rds_monitoring_role_arn
   
   instance_class           = local.env_config.instance_class
@@ -64,6 +61,7 @@ module "rds" {
   allocated_storage       = local.env_config.allocated_storage
   max_allocated_storage   = local.env_config.max_allocated_storage
   storage_type           = local.env_config.storage_type
+  iops                   = local.env_config.iops
   auto_minor_version_upgrade = local.env_config.auto_minor_version_upgrade
   skip_final_snapshot     = local.env_config.skip_final_snapshot
   delete_automated_backups = local.env_config.delete_automated_backups
