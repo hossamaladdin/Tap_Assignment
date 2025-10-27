@@ -1,25 +1,17 @@
 variable "name_prefix" {
-  description = "Prefix for resource names"
-  type        = string
-  default     = "tap-sqlserver"
-}
-
-variable "db_master_username" {
-  description = "Master username for the database"
-  type        = string
-  default     = "sqladmin"
-  sensitive   = true
-}
-
-variable "master_password" {
-  description = "Master password for the database"
-  type        = string
-  default     = ""
-  sensitive   = true
+  type = string
 }
 
 variable "tags" {
-  description = "Tags to apply to resources"
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
+}
+
+variable "db_master_username" {
+  type = string
+}
+
+variable "db_master_password" {
+  type    = string
+  default = ""
 }

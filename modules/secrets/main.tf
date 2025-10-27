@@ -13,13 +13,7 @@ resource "aws_secretsmanager_secret" "db_credentials" {
   name_prefix             = "${var.name_prefix}-db-credentials-"
   description             = "RDS SQL Server master credentials"
   recovery_window_in_days = 7
-
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.name_prefix}-db-credentials"
-    }
-  )
+  tags                    = merge(var.tags, { Name = "${var.name_prefix}-db-credentials" })
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials" {
@@ -33,9 +27,7 @@ resource "aws_secretsmanager_secret_version" "db_credentials" {
   })
 
   lifecycle {
-    ignore_changes = [
-      secret_string
-    ]
+    ignore_changes = [secret_string]
   }
 }
 
