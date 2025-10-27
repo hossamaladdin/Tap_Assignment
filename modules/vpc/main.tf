@@ -188,7 +188,7 @@ resource "aws_iam_role_policy" "vpc_flow_log" {
           "logs:DescribeLogGroups",
           "logs:DescribeLogStreams"
         ]
-        Effect = "Allow"
+        Effect   = "Allow"
         Resource = "*"
       }
     ]
@@ -197,11 +197,11 @@ resource "aws_iam_role_policy" "vpc_flow_log" {
 
 # S3 VPC Endpoint for secure S3 access without internet gateway
 resource "aws_vpc_endpoint" "s3" {
-  count           = var.enable_s3_endpoint ? 1 : 0
-  vpc_id          = aws_vpc.main.id
-  service_name    = var.s3_endpoint
+  count             = var.enable_s3_endpoint ? 1 : 0
+  vpc_id            = aws_vpc.main.id
+  service_name      = var.s3_endpoint
   vpc_endpoint_type = "Gateway"
-  
+
   route_table_ids = concat(
     aws_route_table.private[*].id,
     [aws_route_table.public.id]

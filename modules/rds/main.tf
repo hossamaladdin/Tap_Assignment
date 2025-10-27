@@ -1,9 +1,9 @@
 resource "random_password" "master" {
-  length  = 16
-  special = true
-  upper   = true
-  lower   = true
-  numeric = true
+  length           = 16
+  special          = true
+  upper            = true
+  lower            = true
+  numeric          = true
   override_special = "!#$%&*()-_=+[]{}:?"
 }
 
@@ -138,6 +138,8 @@ resource "aws_db_instance" "sqlserver" {
   storage_type          = var.storage_type
   storage_encrypted     = true
   iops                  = var.iops
+  kms_key_id            = var.kms_key_id
+  storage_throughput    = var.storage_type == "gp3" ? var.storage_throughput : null
 
   db_name  = null
   username = var.master_username
@@ -153,12 +155,12 @@ resource "aws_db_instance" "sqlserver" {
   parameter_group_name = aws_db_parameter_group.sqlserver.name
   option_group_name    = aws_db_option_group.sqlserver.name
 
-  backup_retention_period = var.backup_retention_period
-  backup_window           = var.backup_window
-  copy_tags_to_snapshot   = var.copy_tags_to_snapshot
-  skip_final_snapshot     = var.skip_final_snapshot
-  delete_automated_backups = var.delete_automated_backups
-  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.name_prefix}-sqlserver-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
+  backup_retention_period   = var.backup_retention_period
+  backup_window             = var.backup_window
+  copy_tags_to_snapshot     = var.copy_tags_to_snapshot
+  skip_final_snapshot       = var.skip_final_snapshot
+  delete_automated_backups  = var.delete_automated_backups
+  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.name_prefix}-sqlserver-final-snapshot-${formatdate("YYYY-MM-DD-HHmm", timestamp())}"
 
   maintenance_window         = var.maintenance_window
   auto_minor_version_upgrade = var.auto_minor_version_upgrade

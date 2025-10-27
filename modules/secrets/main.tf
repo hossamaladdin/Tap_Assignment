@@ -1,7 +1,7 @@
 resource "random_password" "master" {
-  count   = var.db_master_password == "" ? 1 : 0
-  length  = 32
-  special = true
+  count            = var.db_master_password == "" ? 1 : 0
+  length           = 32
+  special          = true
   override_special = "!#$%&*()-_=+[]{}:?"
   min_lower        = 1
   min_upper        = 1

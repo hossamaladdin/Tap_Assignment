@@ -188,6 +188,12 @@ variable "auto_minor_version_upgrade" {
   type        = bool
 }
 
+variable "kms_key_id" {
+  description = "Optional customer-managed KMS key ID/ARN for storage encryption (defaults AWS-managed if null)."
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags"
   type        = map(string)
