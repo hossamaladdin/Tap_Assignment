@@ -5,7 +5,7 @@ variable "environment" {
 
 variable "project_name" {
   type    = string
-  default = "tap-assignment"
+  default = "sql-rds"
 }
 
 variable "aws_region" {

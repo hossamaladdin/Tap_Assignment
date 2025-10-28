@@ -1,6 +1,6 @@
 variable "name_prefix" {
   type    = string
-  default = "tap-sqlserver"
+  default = "sql-rds"
 }
 
 variable "vpc_cidr" {
