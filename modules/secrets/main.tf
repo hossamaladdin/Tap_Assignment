@@ -10,10 +10,20 @@ resource "random_password" "master" {
 }
 
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name_prefix             = "${var.name_prefix}-db-credentials-"
+  name                    = "${var.name_prefix}-db-credentials"
   description             = "RDS SQL Server master credentials"
   recovery_window_in_days = 7
   tags                    = merge(var.tags, { Name = "${var.name_prefix}-db-credentials" })
+}
+
+resource "aws_secretsmanager_secret_rotation" "db_credentials" {
+  count               = var.enable_rotation ? 1 : 0
+  secret_id           = aws_secretsmanager_secret.db_credentials.id
+  rotation_lambda_arn = var.rotation_lambda_arn
+
+  rotation_rules {
+    automatically_after_days = var.rotation_days
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials" {

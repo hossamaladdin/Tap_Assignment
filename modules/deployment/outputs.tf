@@ -57,3 +57,13 @@ output "connection_info" {
   }
   sensitive = true
 }
+
+output "cloudwatch_dashboard_name" {
+  value       = module.monitoring.dashboard_name
+  description = "Name of the CloudWatch dashboard"
+}
+
+output "cloudwatch_alarm_arns" {
+  value       = module.monitoring.alarm_arns
+  description = "ARNs of CloudWatch alarms"
+}

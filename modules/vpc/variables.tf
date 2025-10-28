@@ -28,6 +28,12 @@ variable "enable_nat_gateway" {
   default = true
 }
 
+variable "single_nat_gateway" {
+  type        = bool
+  default     = false
+  description = "Use a single NAT Gateway for cost optimization. If true, creates only one NAT Gateway instead of one per AZ. RDS Multi-AZ still provides high availability."
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

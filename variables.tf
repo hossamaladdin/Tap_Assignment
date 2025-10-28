@@ -17,3 +17,9 @@ variable "allowed_cidr_blocks" {
   type    = list(string)
   default = ["0.0.0.0/0"]
 }
+
+variable "single_nat_gateway" {
+  type        = bool
+  default     = true
+  description = "Use a single NAT Gateway for cost optimization. Set to false for production high-availability (3 NAT Gateways)."
+}

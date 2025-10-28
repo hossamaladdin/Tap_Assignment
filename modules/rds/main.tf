@@ -5,7 +5,7 @@ resource "aws_db_subnet_group" "main" {
 }
 
 resource "aws_security_group" "rds" {
-  name_prefix = "${var.name_prefix}-rds-"
+  name        = "${var.name_prefix}-rds-sg"
   description = "Security group for RDS SQL Server"
   vpc_id      = var.vpc_id
   tags        = merge(var.tags, { Name = "${var.name_prefix}-rds-sg" })
@@ -48,7 +48,7 @@ resource "aws_security_group_rule" "rds_egress" {
 }
 
 resource "aws_db_parameter_group" "sqlserver" {
-  name_prefix = "${var.name_prefix}-sqlserver-"
+  name        = "${var.name_prefix}-sqlserver-params"
   family      = "sqlserver-se-15.0"
   description = "Custom parameter group for SQL Server"
 
@@ -77,7 +77,7 @@ resource "aws_db_parameter_group" "sqlserver" {
 }
 
 resource "aws_db_option_group" "sqlserver" {
-  name_prefix              = "${var.name_prefix}-sqlserver-"
+  name                     = "${var.name_prefix}-sqlserver-options"
   option_group_description = "Option group for SQL Server"
   engine_name              = "sqlserver-se"
   major_engine_version     = "15.00"

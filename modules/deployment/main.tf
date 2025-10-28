@@ -12,6 +12,7 @@ module "vpc" {
   name_prefix        = local.name_prefix
   s3_endpoint        = var.s3_endpoint
   enable_s3_endpoint = var.enable_s3_endpoint
+  single_nat_gateway = var.single_nat_gateway
   tags               = local.common_tags
 }
 
@@ -22,11 +23,14 @@ module "iam" {
 }
 
 module "secrets" {
-  source             = "../secrets"
-  name_prefix        = local.name_prefix
-  db_master_username = var.db_master_username
-  db_master_password = ""
-  tags               = local.common_tags
+  source              = "../secrets"
+  name_prefix         = local.name_prefix
+  db_master_username  = var.db_master_username
+  db_master_password  = ""
+  enable_rotation     = var.enable_rotation
+  rotation_lambda_arn = var.rotation_lambda_arn
+  rotation_days       = var.rotation_days
+  tags                = local.common_tags
 }
 
 module "rds" {
@@ -52,4 +56,19 @@ module "rds" {
   master_username            = var.db_master_username
   master_password            = module.secrets.db_password
   tags                       = local.common_tags
+}
+
+module "monitoring" {
+  source                 = "../monitoring"
+  depends_on             = [module.rds]
+  name_prefix            = local.name_prefix
+  aws_region             = var.aws_region
+  db_instance_identifier = module.rds.db_instance_identifier
+  alarm_actions          = var.alarm_actions
+  cpu_threshold          = var.cpu_threshold
+  memory_threshold       = var.memory_threshold
+  storage_threshold      = var.storage_threshold
+  connections_threshold  = var.connections_threshold
+  latency_threshold      = var.latency_threshold
+  tags                   = local.common_tags
 }
