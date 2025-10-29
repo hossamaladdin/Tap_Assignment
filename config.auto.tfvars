@@ -1,3 +1,4 @@
+# Environment
 # Global Configuration - Shared Across All Environments
 # This file is automatically loaded by Terraform in each environment directory
 
@@ -30,17 +31,5 @@ enable_s3_endpoint = true                # Cost optimization (no NAT for S3)
 
 # Database Configuration
 db_master_username = "sqladmin"
-
+environment = "dev"
 # Secrets Management
-enable_rotation = false                  # Disabled for demo
-rotation_days   = 30                     # Password rotation frequency (if enabled)
-
-# Monitoring Thresholds
-cpu_threshold         = 80               # CPU utilization percentage
-memory_threshold      = 1073741824       # 1GB in bytes
-storage_threshold     = 5368709120       # 5GB in bytes
-connections_threshold = 50               # Connection count
-latency_threshold     = 0.1              # Seconds
-
-# CloudWatch Alarms (empty for demo - add SNS topic ARN for notifications)
-alarm_actions = []

@@ -13,7 +13,7 @@ variable "subnet_ids" {
 
 variable "instance_class" {
   type    = string
-  default = "db.t3.large"
+  default = "db.m5.large"
 }
 
 variable "engine_version" {

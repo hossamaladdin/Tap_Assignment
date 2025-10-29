@@ -1,5 +1,7 @@
+
 variable "project_name" {
-  type = string
+  type    = string
+  default = "sql-rds"
 }
 
 variable "environment" {
@@ -32,31 +34,38 @@ variable "kms_key_id" {
 }
 
 variable "instance_class" {
-  type = string
+  type    = string
+  default = "db.t3.small"
 }
 
 variable "multi_az" {
-  type = bool
+  type    = bool
+  default = false
 }
 
 variable "backup_retention_period" {
-  type = number
+  type    = number
+  default = 1
 }
 
 variable "deletion_protection" {
-  type = bool
+  type    = bool
+  default = false
 }
 
 variable "allocated_storage" {
-  type = number
+  type    = number
+  default = 20
 }
 
 variable "max_allocated_storage" {
-  type = number
+  type    = number
+  default = 50
 }
 
 variable "storage_type" {
-  type = string
+  type    = string
+  default = "gp2"
 }
 
 variable "iops" {
@@ -65,15 +74,18 @@ variable "iops" {
 }
 
 variable "auto_minor_version_upgrade" {
-  type = bool
+  type    = bool
+  default = true
 }
 
 variable "skip_final_snapshot" {
-  type = bool
+  type    = bool
+  default = true
 }
 
 variable "delete_automated_backups" {
-  type = bool
+  type    = bool
+  default = true
 }
 
 variable "db_master_username" {

@@ -93,7 +93,7 @@ resource "aws_flow_log" "main" {
 resource "aws_cloudwatch_log_group" "vpc_flow_log" {
   name              = "/aws/vpc/${var.name_prefix}"
   retention_in_days = 7
-  skip_destroy      = false
+  skip_destroy      = false # Explicitly allow destroy
   tags              = merge(var.tags, { Name = "${var.name_prefix}-vpc-flow-log" })
 }
 

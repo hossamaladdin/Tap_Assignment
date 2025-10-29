@@ -1,3 +1,8 @@
+variable "environment" {
+  description = "Environment name (dev, prod, etc.)"
+  type = string
+}
+
 variable "name_prefix" {
   type = string
 }

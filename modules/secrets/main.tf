@@ -9,8 +9,10 @@ resource "random_password" "master" {
   min_special      = 1
 }
 
+
+# Use a fixed secret name for idempotency
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name                    = "${var.name_prefix}-db-credentials"
+  name                    = "${var.name_prefix}-database-credentials-${var.environment}"
   description             = "RDS SQL Server master credentials"
   recovery_window_in_days = 7
   tags                    = merge(var.tags, { Name = "${var.name_prefix}-db-credentials" })

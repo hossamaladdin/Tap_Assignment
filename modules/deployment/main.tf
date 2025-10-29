@@ -25,6 +25,7 @@ module "iam" {
 module "secrets" {
   source              = "../secrets"
   name_prefix         = local.name_prefix
+  environment         = var.environment
   db_master_username  = var.db_master_username
   db_master_password  = ""
   enable_rotation     = var.enable_rotation

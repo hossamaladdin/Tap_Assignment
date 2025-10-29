@@ -9,8 +9,6 @@ echo "   Bucket: $BUCKET"
 echo "   Region: $REGION"
 echo ""
 
-# Create S3 bucket for Terraform state
-# Note: us-east-1 does not support LocationConstraint parameter
 if [ "$REGION" = "us-east-1" ]; then
   echo "Creating S3 bucket in us-east-1..."
   aws s3api create-bucket \
@@ -24,13 +22,11 @@ else
     --create-bucket-configuration LocationConstraint="$REGION" 2>/dev/null || echo "   (Bucket may already exist)"
 fi
 
-# Enable versioning for state safety
 echo "Enabling versioning..."
 aws s3api put-bucket-versioning \
   --bucket "$BUCKET" \
   --versioning-configuration Status=Enabled
 
-# Enable encryption
 echo "Enabling encryption..."
 aws s3api put-bucket-encryption \
   --bucket "$BUCKET" \
@@ -42,17 +38,20 @@ aws s3api put-bucket-encryption \
     }]
   }'
 
-# Block public access
 echo "Blocking public access..."
 aws s3api put-public-access-block \
   --bucket "$BUCKET" \
   --public-access-block-configuration \
     "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
 
-# Create folders for each environment (optional, S3 is flat)
 echo "Creating environment folders..."
-for ENV in dev stg prod pre-prod; do
-  aws s3api put-object --bucket "$BUCKET" --key "$ENV/" || true
+for ENV in $(find env -mindepth 1 -maxdepth 1 -type d -printf '%f\n'); do
+  if ! aws s3api list-objects-v2 --bucket "$BUCKET" --prefix "$ENV/" --delimiter '/' --query "CommonPrefixes[].Prefix" --output text | grep -q "^$ENV/$"; then
+    aws s3api put-object --bucket "$BUCKET" --key "$ENV/" || true
+    echo "   Created S3 folder/object for $ENV"
+  else
+    echo "   S3 folder/object for $ENV already exists, skipping."
+  fi
 done
 
 echo ""

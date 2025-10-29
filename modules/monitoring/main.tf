@@ -1,4 +1,3 @@
-# CloudWatch Dashboard for RDS SQL Server
 resource "aws_cloudwatch_dashboard" "rds" {
   dashboard_name = "${var.name_prefix}-rds-dashboard"
 
@@ -95,7 +94,6 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
-  namespace           = "AWS/RDS"
   period              = 300
   statistic           = "Average"
   threshold           = var.cpu_threshold
