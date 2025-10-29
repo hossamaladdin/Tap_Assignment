@@ -11,7 +11,7 @@ project_name = "sql-rds"
 instance_class          = "db.t3.small"  # Cost-effective for demo
 allocated_storage       = 20             # Minimum for SQL Server
 max_allocated_storage   = 50             # Auto-scaling limit
-storage_type            = "gp3"          # Modern general-purpose SSD
+storage_type            = "gp2"          # General-purpose SSD (SQL Server does not support gp3)
 multi_az                = false          # Single-AZ for demo (saves cost)
 
 # Backup Configuration (Demo Settings)
@@ -33,6 +33,7 @@ db_master_username = "sqladmin"
 
 # Secrets Management
 enable_rotation = false                  # Disabled for demo
+rotation_days   = 30                     # Password rotation frequency (if enabled)
 
 # Monitoring Thresholds
 cpu_threshold         = 80               # CPU utilization percentage

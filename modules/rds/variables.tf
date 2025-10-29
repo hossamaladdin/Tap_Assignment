@@ -32,8 +32,14 @@ variable "max_allocated_storage" {
 }
 
 variable "storage_type" {
-  type    = string
-  default = "gp3"
+  type        = string
+  default     = "gp2"
+  description = "Storage type for RDS instance. SQL Server supports: gp2, io1, io2. Note: gp3 is NOT supported by SQL Server."
+
+  validation {
+    condition     = contains(["gp2", "io1", "io2"], var.storage_type)
+    error_message = "Storage type must be gp2, io1, or io2. SQL Server does not support gp3."
+  }
 }
 
 variable "iops" {

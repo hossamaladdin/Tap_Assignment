@@ -94,6 +94,7 @@ variable "rotation_lambda_arn" {
 
 variable "rotation_days" {
   type        = number
+  default     = 30
   description = "Days between password rotations"
 }
 
