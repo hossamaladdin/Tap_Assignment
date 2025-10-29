@@ -56,11 +56,6 @@ module "rds" {
   master_username            = var.db_master_username
   master_password            = module.secrets.db_password
   tags                       = local.common_tags
-  timeouts = {
-    create = "90m"
-    update = "90m"
-    delete = "90m"
-  }
 }
 
 module "monitoring" {

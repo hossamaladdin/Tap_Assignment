@@ -10,21 +10,34 @@ crash.log
 crash.*.log
 
 # Exclude all .tfvars files, which are likely to contain sensitive data
-# But include example files
 *.tfvars
-!dev.tfvars
-!staging.tfvars
-!prod.tfvars
+*.tfvars.json
 
-# Ignore override files
+# BUT include the shared config file that's safe for demo
+!config.auto.tfvars
+
+# Ignore override files as they are usually used to override resources locally
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 
+# Ignore transient lock info files created by terraform apply
+.terraform.tfstate.lock.info
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+*tfplan*
+
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
 
-# Lock file (optional - some teams commit this)
+# Ignore lock file (optional - some teams version control this)
 .terraform.lock.hcl
+
+# Ignore Mac files
+.DS_Store
+
+# Ignore backup files from scripts
+*.bak
+*.tmp

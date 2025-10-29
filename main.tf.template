@@ -1,8 +1,8 @@
-# Backend Configuration for Dev Environment
+# Backend Configuration for ENV_NAME Environment
 terraform {
   backend "s3" {
     bucket  = "tap-assignment-tfstate"
-    key     = "stg/terraform.tfstate"
+    key     = "ENV_NAME/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
   }
@@ -14,7 +14,7 @@ module "deployment" {
 
   # Environment Configuration
   project_name = var.project_name
-  environment  = "stg"
+  environment  = "ENV_NAME"
 
   # AWS Configuration
   aws_region = var.aws_region

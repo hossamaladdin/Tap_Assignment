@@ -8,7 +8,7 @@ resource "aws_cloudwatch_dashboard" "rds" {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "CPUUtilization", { stat = "Average", label = "CPU Average" }],
+            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.db_instance_identifier, { stat = "Average", label = "CPU Average" }],
             ["...", { stat = "Maximum", label = "CPU Maximum" }]
           ]
           view    = "timeSeries"
@@ -16,91 +16,73 @@ resource "aws_cloudwatch_dashboard" "rds" {
           region  = var.aws_region
           title   = "CPU Utilization"
           period  = 300
-          dimensions = {
-            DBInstanceIdentifier = var.db_instance_identifier
-          }
         }
       },
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "DatabaseConnections", { stat = "Average" }]
+            ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", var.db_instance_identifier, { stat = "Average" }]
           ]
           view    = "timeSeries"
           stacked = false
           region  = var.aws_region
           title   = "Database Connections"
           period  = 300
-          dimensions = {
-            DBInstanceIdentifier = var.db_instance_identifier
-          }
         }
       },
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "FreeableMemory", { stat = "Average" }]
+            ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", var.db_instance_identifier, { stat = "Average" }]
           ]
           view    = "timeSeries"
           stacked = false
           region  = var.aws_region
           title   = "Freeable Memory"
           period  = 300
-          dimensions = {
-            DBInstanceIdentifier = var.db_instance_identifier
-          }
         }
       },
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "FreeStorageSpace", { stat = "Average" }]
+            ["AWS/RDS", "FreeStorageSpace", "DBInstanceIdentifier", var.db_instance_identifier, { stat = "Average" }]
           ]
           view    = "timeSeries"
           stacked = false
           region  = var.aws_region
           title   = "Free Storage Space"
           period  = 300
-          dimensions = {
-            DBInstanceIdentifier = var.db_instance_identifier
-          }
         }
       },
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "ReadLatency", { stat = "Average" }],
-            [".", "WriteLatency", { stat = "Average" }]
+            ["AWS/RDS", "ReadLatency", "DBInstanceIdentifier", var.db_instance_identifier, { stat = "Average" }],
+            [".", "WriteLatency", ".", ".", { stat = "Average" }]
           ]
           view    = "timeSeries"
           stacked = false
           region  = var.aws_region
           title   = "Read/Write Latency"
           period  = 300
-          dimensions = {
-            DBInstanceIdentifier = var.db_instance_identifier
-          }
         }
       },
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "ReadIOPS", { stat = "Average" }],
-            [".", "WriteIOPS", { stat = "Average" }]
+            ["AWS/RDS", "ReadIOPS", "DBInstanceIdentifier", var.db_instance_identifier, { stat = "Average" }],
+            [".", "WriteIOPS", ".", ".", { stat = "Average" }]
           ]
           view    = "timeSeries"
           stacked = false
           region  = var.aws_region
           title   = "Read/Write IOPS"
           period  = 300
-          dimensions = {
-            DBInstanceIdentifier = var.db_instance_identifier
-          }
         }
       }
     ]
