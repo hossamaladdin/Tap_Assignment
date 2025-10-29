@@ -10,4 +10,5 @@ terraform {
 module "deployment" {
   source      = "../../modules/deployment"
   environment = "dev"
+  db_master_username = "sqladmin"
 }
