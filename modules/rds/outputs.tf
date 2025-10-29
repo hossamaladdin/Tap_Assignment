@@ -52,3 +52,7 @@ output "cloudwatch_log_groups" {
 output "availability_zone" {
   value = aws_db_instance.sqlserver.availability_zone
 }
+output "db_instance_identifier" {
+  description = "The RDS instance identifier."
+  value       = aws_db_instance.sqlserver.id
+}

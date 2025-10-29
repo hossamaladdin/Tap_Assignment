@@ -1,42 +1,108 @@
-# Terraform AWS RDS SQL Server
 
-Provision a production-ready, high-availability SQL Server (Standard Edition) RDS deployment on AWS with comprehensive monitoring, security, and cost optimization features.
+# Tap Assignment: Unified Terraform AWS RDS SQL Server
 
-## Features
+Provision SQL Server RDS on AWS with a unified, minimal Terraform setup supporting multiple environments (dev, stg, prod, and more).
 
-- **High Availability**: Multi-AZ RDS deployment across 3 availability zones
-- **Cost Optimized**: Single NAT Gateway option (saves ~$65/month per environment)
-- **Security**: Encrypted storage, Secrets Manager integration, optional password rotation
-- **Monitoring**: CloudWatch dashboards and alarms for proactive alerting
-- **Networking**: VPC with public/private subnets, NAT Gateway, VPC Flow Logs
-- **Multi-Environment**: Workspace-based deployment for dev, staging, and production
+## Prerequisites (GitHub Codespaces)
 
-## Quick Start
+- AWS CLI configured (`aws configure`)
+- Terraform >= 1.3 installed
+- jq (for parsing secrets)
+- S3 bucket for remote state (see below)
 
-### 1. Initialize and Deploy
+## Folder Structure
 
-```bash
-# Initialize backend and select workspace
-terraform init -reconfigure
-terraform workspace new dev || terraform workspace select dev
-
-# Plan and apply
-terraform plan -var="environment=dev"
-terraform apply -var="environment=dev"
+```
+├── README.md
+├── prep_s3_state.sh
+├── env/
+│   ├── dev/main.tf
+│   ├── stg/main.tf
+│   ├── prod/main.tf
+│   └── <new-env>/main.tf
+└── modules/
+    ├── deployment/
+    ├── vpc/
+    ├── rds/
+    ├── iam/
+    ├── secrets/
+    └── monitoring/
 ```
 
-### 2. Get Connection Info
+## How It Works
+
+- Each environment (dev, stg, prod, etc.) has its own folder and `main.tf`.
+- All config is in `main.tf` per env; no tfvars, no workspace switching, no duplicate state.
+- Remote state is stored in S3, with a unique key per environment (e.g. `dev/terraform.tfstate`).
+
+## Deploying an Environment
 
 ```bash
-# Get RDS endpoint
+# Example for dev
+cd env/dev
+terraform init
+terraform plan
+terraform apply
+
+# Example for prod
+cd env/prod
+terraform init
+terraform plan
+terraform apply
+```
+
+## Adding a New Environment (e.g. preprod)
+
+Run the following bash script to create a new environment folder and main.tf:
+
+```bash
+./prep_new_env.sh preprod
+```
+
+This will:
+- Create `env/preprod/main.tf` (copy from dev)
+- Update backend S3 key and tags for the new environment
+
+### prep_new_env.sh
+```bash
+#!/bin/bash
+set -e
+NEW_ENV="$1"
+if [ -z "$NEW_ENV" ]; then echo "Usage: $0 <env-name>"; exit 1; fi
+cp -r env/dev env/$NEW_ENV
+sed -i "s/environment = \"dev\"/environment = \"$NEW_ENV\"/g" env/$NEW_ENV/main.tf
+sed -i "s/key    = \"dev\/terraform.tfstate\"/key    = \"$NEW_ENV\/terraform.tfstate\"/g" env/$NEW_ENV/main.tf
+sed -i "s/Environment = \"dev\"/Environment = \"$NEW_ENV\"/g" env/$NEW_ENV/main.tf
+echo "Created env/$NEW_ENV/main.tf for environment $NEW_ENV."
+```
+
+## S3 State Handling
+
+- S3 does **not** require you to manually create folders for each environment; Terraform will create the state file at the specified key automatically.
+- The provided `prep_s3_state.sh` script creates the S3 bucket and (optionally) empty folders, but this is not strictly required.
+- Each environment's backend block uses a unique S3 key, so state files never overlap.
+
+## Outputs & Connection Info
+
+After deployment, use these commands:
+
+```bash
 terraform output rds_endpoint
-
-# Get credentials from Secrets Manager
-aws secretsmanager get-secret-value \
-  --secret-id $(terraform output -raw secret_arn) \
-  --query SecretString \
-  --output text | jq -r '.password'
+terraform output secret_arn
+aws secretsmanager get-secret-value --secret-id $(terraform output -raw secret_arn) --query SecretString --output text | jq -r '.password'
 ```
+
+## Production Checklist
+
+- Set `single_nat_gateway = false` for high availability
+- Restrict `allowed_cidr_blocks` to specific IP ranges
+- Configure `alarm_actions` with SNS topic for notifications
+- Enable `enable_rotation = true` for password rotation
+- Review and adjust alarm thresholds for your workload
+
+## License
+
+MIT License - See LICENSE file for details.
 
 ## Architecture
 
