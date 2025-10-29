@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket  = "tap-assignment-tfstate"
-    key     = "stg/terraform.tfstate"
+    key     = "dev/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
   }
@@ -9,5 +9,6 @@ terraform {
 
 module "deployment" {
   source      = "../../modules/deployment"
-  environment = "stg"
+  environment = "dev"
+  db_master_username = "sqladmin"
 }

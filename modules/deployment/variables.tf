@@ -1,4 +1,3 @@
-
 variable "project_name" {
   type    = string
   default = "sql-rds"
@@ -31,66 +30,6 @@ variable "enable_s3_endpoint" {
 variable "kms_key_id" {
   type    = string
   default = ""
-}
-
-variable "instance_class" {
-  type    = string
-  default = "db.t3.small"
-}
-
-variable "multi_az" {
-  type    = bool
-  default = false
-}
-
-variable "backup_retention_period" {
-  type    = number
-  default = 1
-}
-
-variable "deletion_protection" {
-  type    = bool
-  default = false
-}
-
-variable "allocated_storage" {
-  type    = number
-  default = 20
-}
-
-variable "max_allocated_storage" {
-  type    = number
-  default = 50
-}
-
-variable "storage_type" {
-  type    = string
-  default = "gp2"
-}
-
-variable "iops" {
-  type    = number
-  default = null
-}
-
-variable "auto_minor_version_upgrade" {
-  type    = bool
-  default = true
-}
-
-variable "skip_final_snapshot" {
-  type    = bool
-  default = true
-}
-
-variable "delete_automated_backups" {
-  type    = bool
-  default = true
-}
-
-variable "db_master_username" {
-  type    = string
-  default = "sqladmin"
 }
 
 variable "single_nat_gateway" {
@@ -151,4 +90,65 @@ variable "latency_threshold" {
   type        = number
   default     = 0.1
   description = "Read/Write latency alarm threshold in seconds"
+}
+
+variable "db_master_username" {
+  type        = string
+  description = "Master username for the RDS instance."
+}
+
+variable "instance_class" {
+  type    = string
+  default = "db.m5.large"
+}
+
+variable "multi_az" {
+  type    = bool
+  default = false
+}
+
+variable "backup_retention_period" {
+  type    = number
+  default = 7
+}
+
+variable "deletion_protection" {
+  type    = bool
+  default = false
+}
+
+variable "allocated_storage" {
+  type    = number
+  default = 100
+}
+
+variable "max_allocated_storage" {
+  type    = number
+  default = 200
+}
+
+variable "storage_type" {
+  type        = string
+  default     = "gp2"
+  description = "Storage type for RDS instance. SQL Server supports: gp2, io1, io2. Note: gp3 is NOT supported by SQL Server."
+}
+
+variable "iops" {
+  type    = number
+  default = null
+}
+
+variable "auto_minor_version_upgrade" {
+  type    = bool
+  default = true
+}
+
+variable "skip_final_snapshot" {
+  type    = bool
+  default = false
+}
+
+variable "delete_automated_backups" {
+  type    = bool
+  default = true
 }
