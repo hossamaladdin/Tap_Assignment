@@ -33,66 +33,6 @@ variable "kms_key_id" {
   default = ""
 }
 
-variable "instance_class" {
-  type    = string
-  default = "db.t3.small"
-}
-
-variable "multi_az" {
-  type    = bool
-  default = false
-}
-
-variable "backup_retention_period" {
-  type    = number
-  default = 1
-}
-
-variable "deletion_protection" {
-  type    = bool
-  default = false
-}
-
-variable "allocated_storage" {
-  type    = number
-  default = 20
-}
-
-variable "max_allocated_storage" {
-  type    = number
-  default = 50
-}
-
-variable "storage_type" {
-  type    = string
-  default = "gp2"
-}
-
-variable "iops" {
-  type    = number
-  default = null
-}
-
-variable "auto_minor_version_upgrade" {
-  type    = bool
-  default = true
-}
-
-variable "skip_final_snapshot" {
-  type    = bool
-  default = true
-}
-
-variable "delete_automated_backups" {
-  type    = bool
-  default = true
-}
-
-variable "db_master_username" {
-  type    = string
-  default = "sqladmin"
-}
-
 variable "single_nat_gateway" {
   type        = bool
   default     = false

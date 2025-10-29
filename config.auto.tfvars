@@ -9,7 +9,7 @@ aws_region = "us-east-1"
 project_name = "sql-rds"
 
 # RDS Configuration (Demo Settings)
-instance_class          = "db.t3.small"  # Cost-effective for demo
+instance_class          = "db.m5.large"  # Cost-effective for demo
 allocated_storage       = 20             # Minimum for SQL Server
 max_allocated_storage   = 50             # Auto-scaling limit
 storage_type            = "gp2"          # General-purpose SSD (SQL Server does not support gp3)
